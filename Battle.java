@@ -10,13 +10,14 @@ import java.util.ArrayList;
 import java.util.*;
 public class Battle {
 	//Every single object in the game, is made up of the enemies and friendlies arrayLists declared below
-	ArrayList<ArrayList<Character>> entities = new ArrayList<ArrayList<Character>>();
+	Character[][] gameBoard;
+	//ArrayList<ArrayList<Character>> entities = new ArrayList<ArrayList<Character>>();
 	//Is sorted with characters with higher intiative ranking higher
-	ArrayList<Character> intiativeRanking = new ArrayList<Character>();
+	//ArrayList<Character> intiativeRanking = new ArrayList<Character>();
 	//Is an array of all the friendly characters
-	ArrayList<Character> friendlies;
+	//ArrayList<Character> friendlies;
 	//Enemy Array list
-	ArrayList<Character> enemies;
+	//ArrayList<Character> enemies;
 	//Is the width/height(game currently is square)
 	public int tiles = 5;
 	Scanner in = new Scanner(System.in);
@@ -26,10 +27,12 @@ public class Battle {
 		this.enemies = enemies;
 		entities.add(friendlies);
 		entities.add(enemies);
+		gameBoard = new Character[tiles][tiles];
 		//Arranges the characters by intiative
 		assignOrder();
 	}
 	//This searches through the entire arrayList to see if there is an entity at a location, returning it, or null if nothing is there
+	/*
 	public Entity search(int p, int q){
 		for(int j = 0; j < entities.size(); j ++){
 			for(int i = 0; i < entities.get(j).size(); i++){
@@ -40,14 +43,19 @@ public class Battle {
 		}
 		return null;
 	}
+	*/
+	// replacement for the preivous search
+	public Entity recall(int p, int q){
+		if(gameBoard[p][q] != null) return gameBoard[p][q];
+		return null;
+	}
 	//Prints the board
 	public String toString(){
 		String ret = "";
 		for(int i = 0; i < tiles; i++){
 			for(int j = 0; j < tiles; j++){
-				if(search(j,i) != null)
-				ret = ret + search(j,i) + " ";
-				else ret = ret + "# ";
+				if(recall(i,j) == null) ret = ret + "# ";
+				else ret = ret + recall(i,j).toString() + " ";
 			}
 			ret = ret + "\n";
 		}
@@ -76,19 +84,27 @@ public class Battle {
 			selected.move(x, y);
 		}
 	}
-	//is used to assess if team is down
-	//returns -1 if entire team is down
-	//returns the team that is entirely down
+	//returns the team down(0 for friendly, 1 for enemy)
+	//if no team is down it return -1
+	//if both teams are down it returns -2(simply so that if this happens we can record it)
 	private int checkTeamStatus(){
-		for(int i = 0; i < entities.size(); i++){
-			boolean ret = true;
-			for(int j = 0; j < entities.get(i).size(); j++){
-				if(entities.get(i).get(j).up){
-					ret = false;
+		boolean checkTeam0 = false;
+		boolean checkTeam1 = false;
+		for(int i = 0; i < tiles; i++){
+			for(int j = 0; j < tiles; j++){
+				if(recall(i,j) != null && recall(i,j).up){
+					if(recall(i,j).team == 0){
+						checkTeam0 = true;	
+					}
+					else if(recall(i,j).team == 1){
+						checkTeam1 = true;	
+					}
 				}
 			}
-			if(ret)return i;
 		}
+		if(!checkTeam0 && checkTeam1) return 0;
+		if(!checkTeam1 && checkTeam0) return 1;
+		if(!checkTeam0 && !checkTeam1) return 2;
 		return -1;
 	}
 	//Is used solely in the production of the character
@@ -110,8 +126,7 @@ public class Battle {
 			assignOrder();
 		}
 	}
-	//This is a loop designed to get the intiatives ranked in order
-	//Not 100% that it is working
+	//So i left this untouched in case you wanted to edit, but besides that I have pretty much removed lots of the arrayLists, and replaced it with the 2D array for O(1) time
 	private void order(){
 		for(int j = 0; j < intiativeRanking.size(); j++){
 			for(int i = j; i < intiativeRanking.size(); i++){
@@ -126,9 +141,11 @@ public class Battle {
 	}
 	//This is designed to set the order to the intiatives
 	private void assignOrder(){
-		for(int i = 0; i < entities.size(); i++){
-			for(int j = 0; j < entities.get(i).size(); j++){
-				intiativeRanking.add(entities.get(i).get(j));
+		for(int i = 0; i < tiles; i++){
+			for(int j = 0; j < tiles; j++){
+				if(recall(i,j) != null){
+					intiativeRanking.add(recall(i,j));
+				}
 			}
 		}
 		order();
