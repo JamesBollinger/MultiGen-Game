@@ -9,10 +9,11 @@
 */
 public abstract class Character extends Entity {
 	int health, strength, speed, dodge, armour, accuracy, intiative;
+	int team; //0 for friendly, 1 for enemy, -1 for no team
 	boolean up = true;
-	public Character(int x,int y,String img, int h, int s, int sp, int d, int ar,int ac, int i){
+	public Character(int x,int y,String img, int h, int s, int sp, int d, int ar,int ac, int i, int t){
 		super(x,y,img);
-		health = h; strength = s; speed = sp; dodge = d; armour = ar;accuracy = ac; intiative = i;
+		health = h; strength = s; speed = sp; dodge = d; armour = ar;accuracy = ac; intiative = i; team = t;
 	}
 	public void move(int x,int y){this.x = x;this.y = y;}
 	public abstract void attack(Character target);
