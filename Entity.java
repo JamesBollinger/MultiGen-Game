@@ -30,4 +30,12 @@ public abstract class Entity {
 			   x + 0 == this.x && y - 1 == this.y
 			   );
 	}
+
+	public int getX(){
+		return x;
+	}
+
+	public int getY(){
+		return y;
+	}
 }

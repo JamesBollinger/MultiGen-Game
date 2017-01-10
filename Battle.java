@@ -11,9 +11,16 @@ import java.util.*;
 public class Battle {
 	//Every single object in the game, is made up of the enemies and friendlies arrayLists declared below
 	Character[][] gameBoard;
+
+	// a List for all Entities currently in the battle;
+	// including friendly, enemy, and (possibly) neutral:
+	// I would argue this is needed for 
+	// the purpose of determining, efficiently, which character has the next lowest initiative. --VC
+	ArrayList<Character> initiativeRanking;
+
 	//ArrayList<ArrayList<Character>> entities = new ArrayList<ArrayList<Character>>();
 	//Is sorted with characters with higher intiative ranking higher
-	//ArrayList<Character> intiativeRanking = new ArrayList<Character>();
+	//ArrayList<Character> initiativeRanking = new ArrayList<Character>();
 	//Is an array of all the friendly characters
 	//ArrayList<Character> friendlies;
 	//Enemy Array list
@@ -23,13 +30,70 @@ public class Battle {
 	Scanner in = new Scanner(System.in);
 	//Takes in the arrayLists, is designed for latter implementation in which they will be chosen before hand
 	public Battle(ArrayList<Character> friendlies, ArrayList<Character> enemies){
+		/* I'm not sure if we'll still be keeping these lists separate
+		 * (the list of friendly entities versus enemy units) 
+		 * given that we're using a 2d array for the game board, and each entity knows its "Team"
+		 *
+		 * However, I would argue that we *could* still have use
+		 * for a general list of entities, in addition to the game baord.
+		 * 
+		 * Using a 2d array provides efficiency for some tasks, like
+		 * determining the Team of a unit on an arbitrary square of the board.
+		 *
+		 * However, my concern is that the 2d array by itself
+		 *  does NOT provide efficiency for other tasks, e.g.
+		 *  processing the entities in order of their initiative.
+		 *  (To get the unit with the next-lowest initiative, one would have to check all (tiles)^2
+		 *    Depending on how we might store an entity list, getting
+		 *    this next element could be far more efficient
+		 *    than cycling through each square of the matrix/ 2d array.)
+		 * This is somewhat complicated to prove, but the idea is that
+		 * the number of comparisons done on average could be far less if we store entities in a heap
+		 * versus if we only have a 2d array
+		 * Using a 2d array: there are exactly t^2 comparisons to find the next
+		 * max-initiative unit;
+		 * Using a heap to store all entities: there are 0 comparisons to find the next max-initiative,
+		 * plus the log(n) comparisons to maintain the heap invariant.
+		 * 
+		 * In either case, we'll also need to consider how this
+		 * Constructor is going to be changed...
+		 * i.e., will the "caller" be giving this class Lists of friendly and enemy units
+		 * separately?
+		 * (This is very possibly the way we'll do it, but it's something we'll need to think about.)
+		 * */
+/*
 		this.friendlies = friendlies;
 		this.enemies = enemies;
 		entities.add(friendlies);
 		entities.add(enemies);
+*/
 		gameBoard = new Character[tiles][tiles];
+		initiativeRanking = new ArrayList<Character>();
+		initiativeRanking.addAll(friendlies);
+		initiativeRanking.addAll(enemies);
+		
+		/* Now for the fun part:
+		 * Using the data from the entities, set them on the map! */
+		
+		System.out.println("Entities List - at end of constructor -- " + initiativeRanking.toString());
+
+		for (int mapInd = 0; mapInd < initiativeRanking.size(); mapInd ++) {
+			int nextX = initiativeRanking.get(mapInd).getX();
+			int nextY = initiativeRanking.get(mapInd).getY();
+
+			/* Note: I may want to clarify what X and Y represent
+			* (because it's a grid, we may want to either
+			* rename X and Y as 'row' and 'column'
+			* or at least make sure we're on the same page 
+			* on what X and Y represent */
+			if (gameBoard[nextY][nextX] == null) {
+				gameBoard[nextY][nextX] = initiativeRanking.get(mapInd);
+			} else {
+				throw new UnsupportedOperationException("ERR -- two units are on the same tile???");
+			}
+		}
 		//Arranges the characters by intiative
-		assignOrder();
+//		assignOrder();
 	}
 	//This searches through the entire arrayList to see if there is an entity at a location, returning it, or null if nothing is there
 	/*
@@ -45,7 +109,7 @@ public class Battle {
 	}
 	*/
 	// replacement for the preivous search
-	public Entity recall(int p, int q){
+	public Character recall(int p, int q){
 		if(gameBoard[p][q] != null) return gameBoard[p][q];
 		return null;
 	}
@@ -54,8 +118,11 @@ public class Battle {
 		String ret = "";
 		for(int i = 0; i < tiles; i++){
 			for(int j = 0; j < tiles; j++){
-				if(recall(i,j) == null) ret = ret + "# ";
-				else ret = ret + recall(i,j).toString() + " ";
+				if (recall(i,j) == null){
+					ret = ret + "# ";
+				} else {
+					ret = ret + recall(i,j).toString() + " ";
+				}
 			}
 			ret = ret + "\n";
 		}
@@ -70,7 +137,7 @@ public class Battle {
 			System.out.println("distance too far");
 			return false;
 		}
-		if(this.search(x,y) != null){
+		if(recall(x,y) != null){
 			System.out.println("is occupied");
 			return false;
 		}
@@ -118,8 +185,8 @@ public class Battle {
 	//This is the game loop, designed to run until as single team is utterly defeated
 	public void play(){
 		while(checkTeamStatus() == -1){
-			for(int i = 0; i < intiativeRanking.size(); i++){
-				makeAction(intiativeRanking.get(i));
+			for(int i = 0; i < initiativeRanking.size(); i++){
+				makeAction(initiativeRanking.get(i));
 				System.out.println(this);
 				System.out.println();
 			}
@@ -127,24 +194,148 @@ public class Battle {
 		}
 	}
 	//So i left this untouched in case you wanted to edit, but besides that I have pretty much removed lots of the arrayLists, and replaced it with the 2D array for O(1) time
+/*
 	private void order(){
-		for(int j = 0; j < intiativeRanking.size(); j++){
-			for(int i = j; i < intiativeRanking.size(); i++){
-				if(intiativeRanking.get(j).intiative > intiativeRanking.get(i).intiative){
-					intiativeRanking.add(intiativeRanking.get(i));
-					intiativeRanking.set(i, intiativeRanking.remove(j));
+		for(int j = 0; j < initiativeRanking.size(); j++){
+			for(int i = j; i < initiativeRanking.size(); i++){
+				if(initiativeRanking.get(j).intiative > initiativeRanking.get(i).intiative){
+					initiativeRanking.add(initiativeRanking.get(i));
+					initiativeRanking.set(i, initiativeRanking.remove(j));
 					j--;
 					break;
 				}
 			}
 		}
 	}
+*/
+	private ArrayList<Character> heapify(ArrayList<Character> in){
+		int index = in.size() - 1;
+		if ((index % 2) == 1) {
+			/* make one initial comparison beforehand, then
+			 * decrement index to make sure that index begins the
+			 * routine as an even integer.
+			 * */
+			Character lastEle = in.get(index);
+			int parentInd = ((index - 1) / 2);
+			Character parent = in.get(parentInd);
+			if ((lastEle.getInit() < (parent.getInit()))) {
+				/* swap the child and parent Objects */
+				Character tmp = parent;
+				in.set(parentInd, lastEle);
+				in.set(index, tmp);
+			}
+			index --;
+		}
+		while (index > 0) {
+			int childIndex;
+			Character lesserChild;
+			if (in.get(index-1).getInit() < (in.get(index).getInit())) {
+				lesserChild = in.get(index-1);
+				childIndex = index-1;
+			} else {
+				lesserChild = in.get(index);
+				childIndex = index;
+			}
+			int parentInd = ((index - 1) / 2);
+			Character parent = in.get(parentInd);
+			if ((lesserChild.getInit() < (parent.getInit()))) {
+				/* swap the child and parent Objects */
+				Character tmp = parent;
+				in.set(parentInd, lesserChild);
+				in.set(childIndex, tmp);
+				/* NOTE: so that I don't forget!!!
+				 * There is an important step in here, 
+				 * where you keep sifting down the element
+				 * if it is larger than its children
+				 * it's not as simple as "do one swap"
+				 * so remember to keep checking!
+				 * * */
+				in = siftDown(in, childIndex);
+			}
+			index -= 2;
+		}
+		System.out.println("Heapify'd version is " + in.toString());
+		return in;
+	}
+
+	private ArrayList<Character> siftDown(ArrayList<Character> preSift, int startInd){
+		int size = preSift.size();
+		int currentInd = startInd;
+		int leftInd = (2*startInd) + 1;
+		int rightInd = (2*startInd) + 2;
+		while ((rightInd < size) && (preSift.get(rightInd) != null)) {
+			/*
+			 * Get the minimum of the two children
+			 * and compare to the current node
+			 *  
+			 * */
+			Character lesserChild;
+			int nextCurrent;
+			if (preSift.get(leftInd).getInit() < (preSift.get(rightInd).getInit())) {
+				lesserChild = preSift.get(leftInd);
+				nextCurrent = leftInd;
+			} else {
+				lesserChild = preSift.get(rightInd);
+				nextCurrent = rightInd;
+			}
+
+			if (lesserChild.getInit() < (preSift.get(currentInd).getInit())) {
+				/* swap the relevant data entries */
+				Character tmp = preSift.get(currentInd);
+				preSift.set(currentInd, lesserChild);
+				preSift.set(nextCurrent, tmp);
+				/* and continue sifting down      */
+				currentInd = nextCurrent;
+				leftInd = ((2*currentInd) + 1);
+				rightInd = ((2*currentInd) + 2);
+				System.out.println("Now continuing to sift down using " + currentInd + " and the daughter node indices " + leftInd + " / " + rightInd);
+			} else {
+				/* this will stop sifting, as it should.   */
+				rightInd = size;
+				leftInd = size;
+			}
+		}
+		if ((leftInd < size) && (preSift.get(leftInd) != null)) {
+			Character lesserChild = preSift.get(leftInd);
+			int nextCurrent = leftInd;
+			if (lesserChild.getInit() < (preSift.get(currentInd).getInit())) {
+				/* swap the relevant data entries */
+				Character tmp = preSift.get(currentInd);
+				preSift.set(currentInd, lesserChild);
+				preSift.set(nextCurrent, tmp);
+			}
+		}
+		return preSift;
+	}
+
+	private ArrayList<Character> heapsort(ArrayList<Character> input){
+		int size = input.size();
+		ArrayList<Character> inter = heapify(input);
+		ArrayList<Character> result = new ArrayList<Character>(size);
+		for (int ind = 0; ind < size; ind ++) {
+			result.add(null);
+		}
+		while (size > 0) {
+			Character tmp = inter.get(0);
+			inter.set(0, inter.get(size-1));
+			inter.set(size-1, null);
+			result.set(size-1, tmp);
+			inter = siftDown(inter, 0);
+			size--;
+		}
+		return result;
+	}
+	// Calls heapsort.
+	private void order() {
+		initiativeRanking = heapsort(initiativeRanking);
+	}
+
 	//This is designed to set the order to the intiatives
 	private void assignOrder(){
 		for(int i = 0; i < tiles; i++){
 			for(int j = 0; j < tiles; j++){
 				if(recall(i,j) != null){
-					intiativeRanking.add(recall(i,j));
+					initiativeRanking.add(recall(i,j));
 				}
 			}
 		}
@@ -152,8 +343,8 @@ public class Battle {
 	}
 	//How I actually run and test the program
 	public static void main(String[] args){
-		ArrayList<Character> one = new ArrayList<Character>(); one.add(new Archer(0,1)); one.add(new Archer(0,2));
-		ArrayList<Character> two = new ArrayList<Character>(); two.add(new Soldier(3,1)); two.add(new Soldier(3,2));
+		ArrayList<Character> one = new ArrayList<Character>(); one.add(new Archer(0, 1, 0)); one.add(new Archer(0,2,0));
+		ArrayList<Character> two = new ArrayList<Character>(); two.add(new Soldier(3,1, 1)); two.add(new Soldier(3,2,1));
 		Battle fight = new Battle(one,two);
 		System.out.println(fight);
 		fight.play();
