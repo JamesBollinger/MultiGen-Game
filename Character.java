@@ -26,4 +26,7 @@ public abstract class Character extends Entity {
 		if(health <= 0)
 			up = false;
 	}
+	public void getTeam(){
+		return team;
+	}
 }
