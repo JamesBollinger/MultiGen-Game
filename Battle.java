@@ -137,7 +137,7 @@ public class Battle {
 			System.out.println("distance too far");
 			return false;
 		}
-		if(recall(x,y) != null){
+		if(recall(y,x) != null){
 			System.out.println("is occupied");
 			return false;
 		}
@@ -148,7 +148,9 @@ public class Battle {
 	public void move(Character selected, int x, int y){
 		if(moveTest(selected,x,y)){
 			//alters the characters position
+			gameBoard[selected.getY()][selected.getX()] = null;
 			selected.move(x, y);
+			gameBoard[y][x] = selected;
 		}
 	}
 	//returns the team down(0 for friendly, 1 for enemy)
@@ -177,9 +179,11 @@ public class Battle {
 	//Is used solely in the production of the character
 	public void makeAction(Character actor){
 		//System.out.println("moving about");
+		System.out.print("Enter the destination column value: ");
 		int x = in.nextInt();
+		System.out.print("Enter the destination row value: ");
 		int y = in.nextInt();
-		System.out.println(actor.x + " " + actor.y);
+		System.out.println("About to move to col " + actor.x + ", row " + actor.y);
 		move(actor,x,y);
 	}
 	//This is the game loop, designed to run until as single team is utterly defeated
@@ -208,41 +212,41 @@ public class Battle {
 		}
 	}
 */
-	private ArrayList<Character> heapify(ArrayList<Character> in){
-		int index = in.size() - 1;
+	private ArrayList<Character> heapify(ArrayList<Character> inputList){
+		int index = inputList.size() - 1;
 		if ((index % 2) == 1) {
 			/* make one initial comparison beforehand, then
 			 * decrement index to make sure that index begins the
 			 * routine as an even integer.
 			 * */
-			Character lastEle = in.get(index);
+			Character lastEle = inputList.get(index);
 			int parentInd = ((index - 1) / 2);
-			Character parent = in.get(parentInd);
+			Character parent = inputList.get(parentInd);
 			if ((lastEle.getInit() < (parent.getInit()))) {
 				/* swap the child and parent Objects */
 				Character tmp = parent;
-				in.set(parentInd, lastEle);
-				in.set(index, tmp);
+				inputList.set(parentInd, lastEle);
+				inputList.set(index, tmp);
 			}
 			index --;
 		}
 		while (index > 0) {
 			int childIndex;
 			Character lesserChild;
-			if (in.get(index-1).getInit() < (in.get(index).getInit())) {
-				lesserChild = in.get(index-1);
+			if (inputList.get(index-1).getInit() < (inputList.get(index).getInit())) {
+				lesserChild = inputList.get(index-1);
 				childIndex = index-1;
 			} else {
-				lesserChild = in.get(index);
+				lesserChild = inputList.get(index);
 				childIndex = index;
 			}
 			int parentInd = ((index - 1) / 2);
-			Character parent = in.get(parentInd);
+			Character parent = inputList.get(parentInd);
 			if ((lesserChild.getInit() < (parent.getInit()))) {
 				/* swap the child and parent Objects */
 				Character tmp = parent;
-				in.set(parentInd, lesserChild);
-				in.set(childIndex, tmp);
+				inputList.set(parentInd, lesserChild);
+				inputList.set(childIndex, tmp);
 				/* NOTE: so that I don't forget!!!
 				 * There is an important step in here, 
 				 * where you keep sifting down the element
@@ -250,12 +254,12 @@ public class Battle {
 				 * it's not as simple as "do one swap"
 				 * so remember to keep checking!
 				 * * */
-				in = siftDown(in, childIndex);
+				inputList = siftDown(inputList, childIndex);
 			}
 			index -= 2;
 		}
-		System.out.println("Heapify'd version is " + in.toString());
-		return in;
+		System.out.println("Heapify'd version is " + inputList.toString());
+		return inputList;
 	}
 
 	private ArrayList<Character> siftDown(ArrayList<Character> preSift, int startInd){
@@ -290,7 +294,7 @@ public class Battle {
 				rightInd = ((2*currentInd) + 2);
 				System.out.println("Now continuing to sift down using " + currentInd + " and the daughter node indices " + leftInd + " / " + rightInd);
 			} else {
-				/* this will stop sifting, as it should.   */
+				/* this will cause the loop to stop sifting, as it should.   */
 				rightInd = size;
 				leftInd = size;
 			}
