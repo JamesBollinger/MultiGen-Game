@@ -35,4 +35,23 @@ public abstract class Character extends Entity {
 	public int getInit(){
 		return initiative;
 	}
+	//All of these values should be inputed as either a plus of minus to change it up or down
+	public void setStrength(int change){
+		strength += change;	
+	}
+	public void setSpeed(int change){
+		speed += change;	
+	}
+	public void setDodge(int change){
+		dodge += change;	
+	}
+	public void setArmour(int change){
+		armour += change;	
+	}
+	public void setAccuracy(int change){
+		accuracy += change;	
+	}
+	public void setIntiative(int change){
+		intiative += change;	
+	}
 }
