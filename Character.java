@@ -13,6 +13,8 @@ public abstract class Character extends Entity {
 	int team; //0 for friendly, 1 for enemy, -1 for no team
 	boolean up = true;
 	boolean meleeWeapon, rangedWeapon = false;
+	Weapon main;
+	Weapon secondary;
 	ArrayList<String> statuses = new ArrayList<String>();
 	public Character(int x,int y,String img, int h, int s, int sp, int d, int ar,int ac, int i, int t){
 		super(x,y,img);
