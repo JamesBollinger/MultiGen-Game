@@ -4,18 +4,22 @@
  * Most else similar to archer
  */
 public class Soldier extends Character {
-	Sword sword;
 	public Soldier(int x, int y, int t){
 		super(x,y,"Archer.png",10,5,6,4,3,1,(int)(Math.random()*10), t);
-		sword = new Sword(4,8,7);	
+		main = new Sword(4,8,7);
+		secondary = null;
+		if(main.ranged || secondary.ranged){
+			rangedWeapon = true;	
+		}
+		if(main.melee || secondary.melee){
+			meleeWeapon = true;	
+		}
+		
 	}
 	public String toString(){
 		return "S";
 	}
-	public void attack(Character target){
-		System.out.println(checkAdjacent(target.x,target.y));
-		if(checkAdjacent(target.x,target.y) && target.team != this.team){
-			sword.attack(this, target);
-		}
+	public void attack(Character target, Weapon weapon){
+		sword.attack(this, target);
 	}
 }
