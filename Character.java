@@ -74,8 +74,23 @@ public abstract class Character extends Entity {
 		else System.out.println("invalid attribute");
 	}
 	//For the statuses it will simply add the status string to a string arrayList and then at lower levels in conjunction with action listener, block actions or add modifiers
-	//Considering changing statuses to a hashMap to much more easily obtain duplicates
 	public void status(Character target, String status){
-		target.statuses.add(status);	
+		if(!checkExists(statuses,status))target.statuses.add(status);	
+	}
+	//I may think about creating a status class and creating a HashMap for this, but that would come later and not be hard to quickly implement
+	public boolean checkExists(ArrayList<String> in, String input){
+		for(int i = 0; i < in.size(); i++){
+			if(input.equals(in.get(i)) return true;
+		}
+		return false;
+	}
+	public String removeElem(ArrayList<String> in, String input){
+		for(int i = 0; i < in.size(); i++){
+			if(input.equals(in.get(i)){
+				in.remove(i);
+				return input;
+			}
+		}
+		return null;
 	}
 }
