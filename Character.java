@@ -52,6 +52,6 @@ public abstract class Character extends Entity {
 		accuracy += change;	
 	}
 	public void setIntiative(int change){
-		intiative += change;	
+		initiative += change;	
 	}
 }

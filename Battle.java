@@ -258,7 +258,7 @@ public class Battle {
 			}
 			index -= 2;
 		}
-		System.out.println("Heapify'd version is " + inputList.toString());
+/*		System.out.println("Heapify'd version is " + inputList.toString());	*/
 		return inputList;
 	}
 
@@ -336,6 +336,7 @@ public class Battle {
 
 	//This is designed to set the order to the intiatives
 	private void assignOrder(){
+		initiativeRanking.clear();
 		for(int i = 0; i < tiles; i++){
 			for(int j = 0; j < tiles; j++){
 				if(recall(i,j) != null){
