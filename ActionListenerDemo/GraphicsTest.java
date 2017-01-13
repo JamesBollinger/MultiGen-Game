@@ -60,12 +60,12 @@ class WindowTest extends JPanel implements MouseListener {
 
 	@Override
 	public void mousePressed(MouseEvent ev) {
-		//System.out.println("mouse has been released.");
+		//System.out.println("mouse has been pressed down.");
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent ev) {
-		//System.out.println("mouse has been released.");
+		//System.out.println("mouse has entered the window.");
 	}
 
 	@Override
