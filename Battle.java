@@ -26,7 +26,8 @@ public class Battle {
 	//Enemy Array list
 	//ArrayList<Character> enemies;
 	//Is the width/height(game currently is square)
-	public int tiles = 5;
+	public int tilesX = 5;
+	public int tilesY = 5;
 	Scanner in = new Scanner(System.in);
 	//Takes in the arrayLists, is designed for latter implementation in which they will be chosen before hand
 	public Battle(ArrayList<Character> friendlies, ArrayList<Character> enemies){
@@ -67,7 +68,7 @@ public class Battle {
 		entities.add(friendlies);
 		entities.add(enemies);
 */
-		gameBoard = new Character[tiles][tiles];
+		gameBoard = new Character[tilesY][tilesX];
 		initiativeRanking = new ArrayList<Character>();
 		initiativeRanking.addAll(friendlies);
 		initiativeRanking.addAll(enemies);
