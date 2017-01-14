@@ -20,8 +20,9 @@ public class Archer extends Character {
 	}
 	//Is the attack function for the archer
 	public void attack(Character target, Weapon weapon){
-		if(!checkAdjacent(target.x,target.y) && target.team != this.team){
-			weapon.attack(this, target);
+		if(target.team != this.team){
+			if(weapon.ranged && !checkAdjacent(this,target));
+				weapon.attack(this, target);
 		}
 	}
 }
