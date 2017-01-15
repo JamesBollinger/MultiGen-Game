@@ -4,9 +4,10 @@
  * is where the target actually gets assigned damage to take
  */
 public abstract class Weapon{
- int minDamage, maxDamage, armourPiercing;
- public Weapon(int mI,int mD, int aR){
- 	minDamage = mI; maxDamage = mD; armourPiercing = aR;
+ int damage, armourPiercing;
+ boolean ranged, melee
+ public Weapon(int d, int aR){
+ 	damage = d; armourPiercing = aR;
  }
  public abstract void attack(Character attacker, Character target);
  //This takes into account the targets armor, the armor piercing of the attack and the damage of the weapon
@@ -15,6 +16,6 @@ public abstract class Weapon{
  public void dealDamage(Character target){
 		int amourDifference = armourPiercing - target.armour;
 		if(amourDifference >= 0) amourDifference = 0;
-		target.dealDamage(((int)(Math.random()*(maxDamage-minDamage)) + minDamage - amourDifference));
+		target.dealDamage(damage - amourDifference));
 	}
 }
