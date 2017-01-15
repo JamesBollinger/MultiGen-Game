@@ -38,4 +38,8 @@ public abstract class Entity {
 	public int getY(){
 		return y;
 	}
+
+	public ImageIcon getIcon() {
+		return sprite;
+	}
 }
