@@ -38,6 +38,7 @@ class WindowTest extends JPanel implements MouseListener {
 	private int srcX, srcY;
 	private BufferedImage terrainImage;
 	private BufferedImage unitsImage;
+	private Character highlighted;
 
 	//Every single object in the game, is made up of the enemies and friendlies arrayLists declared below
 	Character[][] gameBoard;
@@ -187,20 +188,17 @@ class WindowTest extends JPanel implements MouseListener {
 					int randomBlue = (int) ((Math.random()*4096));
 					int randomGreen = (int) ((Math.random()*4096));
 					int sum = (randomRed * randomBlue * randomGreen);
-/*					Color nextRandomColor = new Color(randomRed, randomBlue, randomGreen);    */
 
-					// How do the next two statements change if we use a BufferedImage?
-					// Let's find out...
 					colorSquare(x*tileSize, y*tileSize, sum);
 				}
-				kAs2D.drawLine(tileSize*y, 1, tileSize*y, 320);
-				kAs2D.drawLine(1, tileSize*y, 320, tileSize*y);
+				kAs2D.drawLine(tileSize*y, 1, tileSize*y, height);
+				kAs2D.drawLine(1, tileSize*y, width, tileSize*y);
 			}
 			regenColors = false;
 		} else {
 			for (int y = 0; y < numTiles; y ++) {
-				kAs2D.drawLine(tileSize*y, 1, tileSize*y, 320);
-				kAs2D.drawLine(1, tileSize*y, 320, tileSize*y);
+				kAs2D.drawLine(tileSize*y, 1, tileSize*y, height);
+				kAs2D.drawLine(1, tileSize*y, width, tileSize*y);
 			}
 		}
 		kAs2D.drawImage(terrainImage, null, 0, 0);
@@ -227,19 +225,28 @@ class WindowTest extends JPanel implements MouseListener {
 		ImageIcon icon = n.getIcon();
 		if (icon.getIconWidth() > icon.getIconHeight()) {
 			scaleFactor = (((tileSize)) / (double) (icon.getIconWidth()));
-			difference = (tileSize - (icon.getIconHeight()));
-			difference /= (-2.0);
+			difference = (/*icon.getIconWidth()*/tileSize - (scaleFactor*(icon.getIconHeight())));
+			if (difference <= 0) {
+				difference = 0.0;
+			} else {
+				difference /= (2.0);
+			}
+			result.translate(0, difference);
 		} else {
-			scaleFactor = (tileSize / ((double) ((icon.getIconWidth()))));
-			difference = (tileSize - (icon.getIconWidth()));
-			difference /= (-2.0);
+			scaleFactor = (tileSize / ((double) ((icon.getIconHeight()))));
+			difference = (/*icon.getIconHeight()*/tileSize - (scaleFactor*(icon.getIconWidth())));
+			if (difference > 0) {
+				difference /= (2.0);
+			} else {
+				difference = 0.0;
+			}
+			result.translate(difference, 0);
 		}
 		result.scale(scaleFactor, scaleFactor);
-		result.translate(0, difference);
 		return result;
 	}
 
-	private void renderCharImage(Graphics gm, /*int indX, int indY,*/ Character p) {
+	private void renderCharImage(Graphics gm,/* int indX, int indY,*/ Character p) {
 		Graphics2D gm2d = (Graphics2D) gm;
 		AffineTransform applied = getTransformToResize(p);
 		gm2d.drawImage(p.getIcon().getImage(), applied, null);
@@ -257,37 +264,47 @@ class WindowTest extends JPanel implements MouseListener {
 	public void mouseClicked(MouseEvent ev) {
 		int xClick = ev.getX();
 		int yClick = ev.getY();
-		System.out.println("Mouse click occurred at (" + ev.getX()+ ", " + ev.getY() + ").");
+		int xInd = (xClick / tileSize);
+		int yInd = (yClick / tileSize);
+		System.out.println("Mouse click occurred at (" + xClick + ", " + yClick + ").");
 		int snapShotState = getState();
 		if (snapShotState == 0) {
-			// Get the color stored at the location specified.
-			// Save it to a buffer in memory.
-/*			storedColor = ;    */
-			// Or --- alternate approach
-			// store the source coordinates for a call to copyArea()
-			if ((xClick < width) && (yClick < height)) {
-				srcX = tileSize*(xClick / tileSize);
-				srcY = tileSize*(yClick / tileSize);
-
-				System.out.println("source data copied.");
-			} else {
-				System.out.println("Err -- out of bounds");
-			}
-			state ++;
-		} else if (snapShotState == 1) {
-			// Now use the color stored in memory to re-paint this square!
-			// ...
-			if ((xClick < width) && (yClick < height)) {
-				int dstX = tileSize*(xClick / tileSize);
-				int dstY = tileSize*(yClick / tileSize);
-				colorSquare(dstX, dstY, terrainImage.getRGB(srcX, srcY));
+			highlighted = gameBoard[yInd][xInd];
+			if (highlighted != null) {
+				setState(1);
 				repaint();
 			} else {
-				System.out.println("Err -- out of bounds");
+				/* Terrain selected at this point! */
+				/* we could have some sode to deal with that
+				 * (i.e., to process the terrain-click) here... */
+				
 			}
-			state --;
-		} else {
-			// no-op
+		}
+		/* Make comparisons such that:
+		 * the NEXT time the user clicks somewhere (specifying a destination location for
+		 * the so-called "selected" Character,
+		 * the next if-branch is executed. */
+		if (snapShotState == 1) {
+			repaint();
+			snapShotState = 2;
+			setState(2);
+		}
+		while (snapShotState == 2) {
+		/* 
+		 * Process the animation, which will probably take many frames
+		 * and thus justifies a while-loop.
+		 * (Later we might find a better design for this.)
+		 * 
+		 * */
+		//	snapShotState = getState();
+			repaint();
+			setState(3);
+			snapShotState = 3;
+		}
+		if (snapShotState == 3) {
+			move(highlighted, xInd, yInd);
+			repaint();
+			setState(0);
 		}
 	}
 
@@ -321,7 +338,7 @@ public class TmpGraphics extends JFrame {
 		WindowTest allGraphics = new WindowTest(ally, opponent);
 		add(allGraphics);
 		setTitle("Mid-Level Simulation");
-		setSize(340, 360);
+		setSize(740, 720);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
