@@ -10,7 +10,7 @@ public class Bow extends Weapon {
 	//if the accuracy + any additons is less than that range, it will fail
 	//it has a higher percentage chance of success the closer you are/more additions you have
 	//after assessing if the arrow flies where it is suppossed to, it checks if the target dodges
-	public boolean accuracyTest(int range, int dodge, int accuracy int additions){
+	public boolean accuracyTest(int range, int dodge, int accuracy, int additions){
 		if ((double)range / ((double)accuracy + additions) <= Math.random()){
 			boolean check = ((int)(Math.random()*11) + 1 >= dodge);
 			return check;
@@ -18,7 +18,12 @@ public class Bow extends Weapon {
 		return false;
 	}
 	public Bow(int a, int d, Arrow arrow) {
-		super(d,mA,arrow.armourPiercing);
+		/* 
+		 * This "a" parameter used to be "mA"
+		 * (was this a mistsake, or do we need to modify "a" before using it?)
+		 *  -VC
+		 * */
+		super(d,a,arrow.armourPiercing);
 		arrows = new Arrow(arrow.armourPiercing, arrow.quiver);
 		accuracy = a;
 	}
@@ -26,7 +31,7 @@ public class Bow extends Weapon {
 	//comes from weapon
 	public void attack(Character attacker, Character target){
 		arrows.shoot();
-		if(accuracyTest((Archer)attacker).range, target.dodge, attacker.accuracy, 0)){
+		if(accuracyTest(((Archer)attacker).range, target.dodge, attacker.accuracy, 0)){
 			//This method is a weapon method
 			dealDamage(target);
 			System.out.println("hit");

@@ -66,6 +66,10 @@ class WindowTest extends JPanel implements MouseListener {
 					int randomBlue = (int) ((Math.random()*4096));
 					int randomGreen = (int) ((Math.random()*4096));
 					int sum = (randomRed * randomBlue * randomGreen);
+					/* 
+					 * Uncomment the next line to get values for the colors as integers.
+					 * */
+/*					System.out.println("The number for the color at col="+x+", row="+y+" is "+sum);*/
 /*					Color nextRandomColor = new Color(randomRed, randomBlue, randomGreen);    */
 
 					// How do the next two statements change if we use a BufferedImage?

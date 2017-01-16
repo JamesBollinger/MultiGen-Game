@@ -11,9 +11,14 @@ import javax.swing.ImageIcon;
 public abstract class Entity {
 	//This are the primary instances that everything uses
 	ImageIcon sprite;int x;int y;
-	public Entity(int r, int j, String img) {x = r;y=j;try {
-		sprite  = new ImageIcon(ImageIO.read(Entity.class.getResourceAsStream(img) ) );
-	} catch (IOException e) {}
+	public Entity(int r, int j, String img) {
+		x = r;
+		y = j;
+		try {
+			sprite  = new ImageIcon(ImageIO.read(Entity.class.getResourceAsStream(img)));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	public void setSprite(String img){sprite = new ImageIcon(img);}
 	public String toString(){
