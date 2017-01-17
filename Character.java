@@ -35,6 +35,9 @@ public abstract class Character extends Entity {
 	public int getInit(){
 		return initiative;
 	}
+	public int getSpeed(){
+		return speed;
+	}
 	//All of these values should be inputed as either a plus of minus to change it up or down
 	public void setStrength(int change){
 		strength += change;	

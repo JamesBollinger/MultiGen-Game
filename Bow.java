@@ -20,7 +20,9 @@ public class Bow extends Weapon {
 	public Bow(int a, int d, Arrow arrow) {
 		/* 
 		 * This "a" parameter used to be "mA"
-		 * (was this a mistsake, or do we need to modify "a" before using it?)
+		 * ('modified attack' or perhaps 'modified accuracy'?)
+		 * (was this a mistsake, or do we need
+		 *  to modify the value of "a", before using it?)
 		 *  -VC
 		 * */
 		super(d,a,arrow.armourPiercing);

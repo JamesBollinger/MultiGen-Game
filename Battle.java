@@ -117,8 +117,8 @@ public class Battle {
 	//Prints the board
 	public String toString(){
 		String ret = "";
-		for(int i = 0; i < tiles; i++){
-			for(int j = 0; j < tiles; j++){
+		for(int i = 0; i < tilesY; i++){
+			for(int j = 0; j < tilesX; j++){
 				if (recall(i,j) == null){
 					ret = ret + "# ";
 				} else {
@@ -131,10 +131,25 @@ public class Battle {
 	}
 	//checks to see if a move is valid
 	private boolean moveTest(Character selected, int x, int y){
-		if(x >= tiles || y >= tiles || x < 0 || y < 0)
+		if(x >= tilesX || y >= tilesY || x < 0 || y < 0)
 			return false;
-		double distance = Math.sqrt(Math.pow((selected.x-x), 2) + Math.pow(selected.y-y, 2));
-		if(distance > selected.speed){
+		int distance;
+		int initX = selected.getX();
+		int initY = selected.getY();
+		if (initX < x) {
+			if (initY < y) {
+				distance = (x - initX) + (y - initY);
+			} else {
+				distance = (x - initX) + (initY - y);
+			}
+		} else {
+			if (initY < y) {
+				distance = (initX - x) + (y - initY);
+			} else {
+				distance = (initX - x) + (initY - y);
+			}
+		}
+		if(distance > selected.getSpeed()){
 			System.out.println("distance too far");
 			return false;
 		}
@@ -160,8 +175,8 @@ public class Battle {
 	private int checkTeamStatus(){
 		boolean checkTeam0 = false;
 		boolean checkTeam1 = false;
-		for(int i = 0; i < tiles; i++){
-			for(int j = 0; j < tiles; j++){
+		for(int i = 0; i < tilesY; i++){
+			for(int j = 0; j < tilesX; j++){
 				if(recall(i,j) != null && recall(i,j).up){
 					if(recall(i,j).team == 0){
 						checkTeam0 = true;	
@@ -338,8 +353,8 @@ public class Battle {
 	//This is designed to set the order to the intiatives
 	private void assignOrder(){
 		initiativeRanking.clear();
-		for(int i = 0; i < tiles; i++){
-			for(int j = 0; j < tiles; j++){
+		for(int i = 0; i < tilesY; i++){
+			for(int j = 0; j < tilesX; j++){
 				if(recall(i,j) != null){
 					initiativeRanking.add(recall(i,j));
 				}
