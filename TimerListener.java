@@ -4,8 +4,7 @@
  * partly inspired by the tutorial by Jan Bodnar fround at:
  * http://zetcode.com/gfx/java2d/basicdrawing/
  * 
- * But --- now it uses a BufferedImage to model the terrainImage.
- * (This is the graphicaal representation of the game board.)
+ * This will be a timer listener, once I develop it...
  * 
  */
 
@@ -35,10 +34,11 @@ class WindowTest extends JPanel implements MouseListener {
 	private boolean regenColors;
 	private ArrayList<Character> entities;
 /*	private Color storedColor;    */
-	private int srcX, srcY;
-	private BufferedImage terrainImage;
+	private int numLayers;
+	private BufferedImage[] terrainImage;
 	private BufferedImage unitsImage;
 	private Character highlighted;
+	private int currentTeam;
 
 	//Every single object in the game, is made up of the enemies and friendlies arrayLists declared below
 	Character[][] gameBoard;
@@ -51,8 +51,8 @@ class WindowTest extends JPanel implements MouseListener {
 	//Enemy Array list
 	ArrayList<Character> enemies;
 	//Is the width/height(game currently is square)
-	public int tilesX = 50;
-	public int tilesY = 50;
+	public int tilesX = 8;
+	public int tilesY = 8;
 	private int state;
 
 	public WindowTest(ArrayList<Character> playerUnits, ArrayList<Character> enemyUnits) {
@@ -62,7 +62,10 @@ class WindowTest extends JPanel implements MouseListener {
 		addMouseListener(this);
 		state = 0;
 		regenColors = true;
-		terrainImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		numLayers = 3;
+		currentTeam = 0; // start the game in Player Phase
+		terrainImage = new BufferedImage[3];
+		terrainImage[0] = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		unitsImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
 		friendlies = playerUnits;
@@ -140,7 +143,22 @@ class WindowTest extends JPanel implements MouseListener {
 	private boolean moveTest(Character selected, int x, int y){
 		if(x >= tilesX || y >= tilesY || x < 0 || y < 0)
 			return false;
-		double distance = Math.sqrt(Math.pow((selected.x-x), 2) + Math.pow(selected.y-y, 2));
+		int distance;
+		int initX = selected.getX();
+		int initY = selected.getY();
+		if (initX < x) {
+			if (initY < y) {
+				distance = (x - initX) + (y - initY);
+			} else {
+				distance = (x - initX) + (initY - y);
+			}
+		} else {
+			if (initY < y) {
+				distance = (initX - x) + (y - initY);
+			} else {
+				distance = (initX - x) + (initY - y);
+			}
+		}
 		if(distance > selected.speed){
 			System.out.println("distance too far");
 			return false;
@@ -163,12 +181,15 @@ class WindowTest extends JPanel implements MouseListener {
 		}
 	}
 
-	private void colorSquare (int xInd, int yInd, int color) {
+	private void colorSquare(int layer, int xInd, int yInd, int color) {
 		int r = tileSize*(xInd / tileSize);
 		int s = tileSize*(yInd / tileSize);
 		for (int i = 0; i < tileSize; i ++) {
 			for (int j = 0; j < tileSize; j ++) {
-				terrainImage.setRGB(r+i, s+j, color);
+/*				if ((i == 0) && (j == 0)) {
+					System.out.println("\tpixel has been colored " + color);
+				}*/
+				terrainImage[layer].setRGB(r+i, s+j, color);
 			}
 		}
 	}
@@ -189,7 +210,11 @@ class WindowTest extends JPanel implements MouseListener {
 					int randomGreen = (int) ((Math.random()*4096));
 					int sum = (randomRed * randomBlue * randomGreen);
 
-					colorSquare(x*tileSize, y*tileSize, sum);
+					if ((sum + 1587614848) != 0) {
+						colorSquare(0, x*tileSize, y*tileSize, sum);
+					} else {
+						colorSquare(0, x*tileSize, y*tileSize, 122110000-sum);
+					}
 				}
 				kAs2D.drawLine(tileSize*y, 1, tileSize*y, height);
 				kAs2D.drawLine(1, tileSize*y, width, tileSize*y);
@@ -201,7 +226,15 @@ class WindowTest extends JPanel implements MouseListener {
 				kAs2D.drawLine(1, tileSize*y, width, tileSize*y);
 			}
 		}
-		kAs2D.drawImage(terrainImage, null, 0, 0);
+
+		for (int ind=0; ind < numLayers; ind ++) {
+/*			System.out.println("About to paint layer " + ind + " of the terrain image.");
+			if (terrainImage[ind] == null) {
+				System.out.println("\tERR -- it's null!");
+			}*/
+			kAs2D.drawImage(terrainImage[ind], null, 0, 0);
+/*			kAs2D.drawImage(terrainImage[ind], new AffineTransform(), null);*/
+		}
 	}
 
 	public void drawIcons(Graphics manager) {
@@ -252,6 +285,38 @@ class WindowTest extends JPanel implements MouseListener {
 		gm2d.drawImage(p.getIcon().getImage(), applied, null);
 	}
 
+	/***
+	 * A recursive method to color the area of tiles
+	 * to which a player CAN move a particular unit. 
+	 *
+	 * */
+	private void showMoveRange(int speed, int xCoord, int yCoord) {
+		if ((xCoord >= 0) && (xCoord < tilesX) &&
+		    (yCoord >= 0) && (yCoord < tilesY)) {
+			if (speed == 0) {
+				if (gameBoard[yCoord][xCoord] == null) {
+					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1587614848);
+				} else if (gameBoard[yCoord][xCoord].getTeam() == currentTeam) {
+					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1587614848);
+				}
+			} else {
+				if (gameBoard[yCoord][xCoord] == null) {
+					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1587614848);
+					showMoveRange(speed-1, xCoord-1, yCoord);
+					showMoveRange(speed-1, xCoord+1, yCoord);
+					showMoveRange(speed-1, xCoord, yCoord-1);
+					showMoveRange(speed-1, xCoord, yCoord+1);
+				} else if (gameBoard[yCoord][xCoord].getTeam() == currentTeam) {
+					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1587614848);
+					showMoveRange(speed-1, xCoord-1, yCoord);
+					showMoveRange(speed-1, xCoord+1, yCoord);
+					showMoveRange(speed-1, xCoord, yCoord-1);
+					showMoveRange(speed-1, xCoord, yCoord+1);
+				}
+			}
+		}
+	}
+
 	@Override
 	public void paintComponent(Graphics gm) {
 		super.paintComponent(gm);
@@ -270,14 +335,24 @@ class WindowTest extends JPanel implements MouseListener {
 		int snapShotState = getState();
 		if (snapShotState == 0) {
 			highlighted = gameBoard[yInd][xInd];
-			if (highlighted != null) {
-				setState(1);
-				repaint();
+			if (highlighted.getTeam() != currentTeam) {
+				System.out.println("cannot move that unit.");
 			} else {
-				/* Terrain selected at this point! */
-				/* we could have some sode to deal with that
-				 * (i.e., to process the terrain-click) here... */
-				
+				if (highlighted != null) {
+					setState(1);
+					System.out.println("Set state to 1 upon that click you just made!");
+					terrainImage[1] = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+					System.out.println("Initialized a new BufferedImage at index 1 of the terrain array!");
+					System.out.println("showMoveRange() about to be called, at col = " + xInd + ", row = " + yInd);
+					showMoveRange(highlighted.getSpeed(), xInd, yInd);
+					System.out.println("Prepared the image of MOVE RANGE ahead of time");
+					repaint();
+				} else {
+					/* Terrain selected at this point! */
+					/* we could have some sode to deal with that
+					 * (i.e., to process the terrain-click) here... */
+					
+				}
 			}
 		}
 		/* Make comparisons such that:
@@ -290,7 +365,7 @@ class WindowTest extends JPanel implements MouseListener {
 			setState(2);
 		}
 		while (snapShotState == 2) {
-		/* 
+		/****
 		 * Process the animation, which will probably take many frames
 		 * and thus justifies a while-loop.
 		 * (Later we might find a better design for this.)
@@ -303,6 +378,7 @@ class WindowTest extends JPanel implements MouseListener {
 		}
 		if (snapShotState == 3) {
 			move(highlighted, xInd, yInd);
+			terrainImage[1]  = null;
 			repaint();
 			setState(0);
 		}
@@ -338,7 +414,7 @@ public class TmpGraphics extends JFrame {
 		WindowTest allGraphics = new WindowTest(ally, opponent);
 		add(allGraphics);
 		setTitle("Mid-Level Simulation");
-		setSize(740, 720);
+		setSize(720, 720);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}

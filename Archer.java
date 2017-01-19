@@ -4,7 +4,7 @@ public class Archer extends Character {
 	//is the type of bow, uses different arrow values for quantity and Armour piercing
 	Bow bow;
 	public Archer(int x, int y, int t){
-		super(x,y,"Archer.png",10,5,6,0,0,10,(int)(Math.random()*10), t);
+		super(x,y,"\"artwork\"/Archer.png",10,5,6,0,0,10,(int)(Math.random()*10), t);
 		range = 10;
 		bow = new Bow(10,5,/*3,*/new Arrow(2,3));
 	}
