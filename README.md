@@ -14,6 +14,6 @@ But it got me thinking as to whether we should rename the Character.java class.
 ###Programs Developed so Far
 *   ActionListenerDemo/GraphicsTest.java -- Produces a grid of random-colored tiles, and clicking transfers a tile's color to a different tile.
 *   ActionListenerDemo/GraphicsLines.java -- Produces a grid of random-colored tiles, and clicking refreshes the coloring.
-*   TmpGraphics.java -- manages moving a unit around the map. (Unit order does not yet matter).
+*   TurnBasedSystem.java (reborn from "TmpGraphics") -- manages moving a unit around the map. (Keeps tack of player phase & enemy phase).
 
 

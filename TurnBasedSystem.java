@@ -4,12 +4,12 @@
  * partly inspired by the tutorial by Jan Bodnar fround at:
  * http://zetcode.com/gfx/java2d/basicdrawing/
  * 
- * But --- now it uses a BufferedImage to model the terrainImage.
- * (This is the graphicaal representation of the game board.)
  * 
  */
 
 import java.util.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.geom.*;
@@ -32,16 +32,19 @@ class WindowTest extends JPanel implements MouseListener {
 	private final int tileSize  = 80; // number of pixels spanning the height of each tile
 
 	private int mouseState; // To determine what to do on mouse clicks... you'll see
-	private boolean regenColors;
+	private boolean regenMap;
 /*	private ArrayList<Character> entities;    */
 /*	private Color storedColor;    */
 	private int numLayers;
 	private BufferedImage[] terrainImage;
+	private Image[] terrainDefs;
+	private int[][] terrainMap;
 	private BufferedImage unitsImage;
 	private Character highlighted;
 	private int currentTeam;
 	private int numMoved;
 	private int state;
+	private final int MAP_CHOICES = 1;
 
 	//Every single object in the game, is made up of the enemies and friendlies arrayLists declared below
 	Character[][] gameBoard;
@@ -65,12 +68,13 @@ class WindowTest extends JPanel implements MouseListener {
 		entities.addAll(enemyUnits);*/
 		addMouseListener(this);
 		state = 0;
-		regenColors = true;
+		regenMap = true;
 		numLayers = 3;
 		currentTeam = 0; // start the game in Player Phase
 		numMoved = 0;
 		terrainImage = new BufferedImage[3];
-		terrainImage[0] = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		terrainMap = new int[numTiles][numTiles];
+/*		terrainImage[0] = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);*/
 		unitsImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
 		friendlies = playerUnits;
@@ -200,6 +204,15 @@ class WindowTest extends JPanel implements MouseListener {
 		}
 	}
 
+	private void addTerrainToSquare(Graphics2D gm, int c, int r, int code) {
+		double scaleFactor;
+		AffineTransform placement = new AffineTransform();
+		placement.translate((double) (c*tileSize), (double) (r*tileSize));
+		scaleFactor = (((tileSize)) / (double) (terrainDefs[code].getWidth(this)));
+		placement.scale(scaleFactor, scaleFactor);
+		gm.drawImage(terrainDefs[code], placement, this);
+	}
+
 	public void drawTeamPhaseMessage(Graphics k, int num) {
 		Graphics2D kAs2D = (Graphics2D) k;
 		if (num == 0) {
@@ -216,37 +229,65 @@ class WindowTest extends JPanel implements MouseListener {
 	public void drawBoard(Graphics manager) {
 		Graphics2D kAs2D = (Graphics2D) manager;
 		
-		if (regenColors) {
-			for (int y = 0; y < numTiles; y ++) {
-				for (int x = 0; x < numTiles; x ++) {
-					int randomRed = (int) ((Math.random()*4096));
-					int randomBlue = (int) ((Math.random()*4096));
-					int randomGreen = (int) ((Math.random()*4096));
-					int sum = (randomRed * randomBlue * randomGreen);
-
-					if ((sum + 1587614848) != 0) {
-						colorSquare(0, x*tileSize, y*tileSize, sum);
-					} else {
-						colorSquare(0, x*tileSize, y*tileSize, 122110000-sum);
+		if (regenMap) {
+			int choice = (int) (Math.random()*MAP_CHOICES);
+			try {
+				File randomMap = new File("maps/map" + choice + ".map");
+				Scanner reader = new Scanner(randomMap);
+				terrainDefs = new Image[6];
+				terrainDefs[0] = (new ImageIcon("terrain/ocean.png")).getImage();
+				terrainDefs[1] = (new ImageIcon("terrain/plains.png")).getImage();
+				terrainDefs[2] = (new ImageIcon("terrain/forest.png")).getImage();
+				// these next two images will be created later.
+//				terrainDefs[3] = new ImageIcon("terrain/hills.png");
+//				terrainDefs[4] = new ImageIcon("terrain/snow.png");
+				terrainDefs[5] = (new ImageIcon("terrain/sand.png")).getImage();
+				for (int y = 0; y < numTiles; y ++) {
+					for (int x = 0; x < numTiles; x ++) {
+/*
+						int randomRed = (int) ((Math.random()*4096));
+						int randomBlue = (int) ((Math.random()*4096));
+						int randomGreen = (int) ((Math.random()*4096));
+						int sum = (randomRed * randomBlue * randomGreen);
+						if ((sum + 1587614848) != 0) {
+							colorSquare(0, x*tileSize, y*tileSize, sum);
+						} else {
+							colorSquare(0, x*tileSize, y*tileSize, 122110000-sum);
+						}
+*/
+						int nextCode;
+						nextCode = reader.nextInt();
+						terrainMap[y][x] = nextCode;
+/*						System.out.println("ABOUT TO CALL addTerrainToSquare() on the code " + nextCode);*/
+						addTerrainToSquare(kAs2D, x, y, nextCode);
 					}
+					kAs2D.drawLine(tileSize*y, 1, tileSize*y, height);
+					kAs2D.drawLine(1, tileSize*y, width, tileSize*y);
 				}
-				kAs2D.drawLine(tileSize*y, 1, tileSize*y, height);
-				kAs2D.drawLine(1, tileSize*y, width, tileSize*y);
+				reader.close();
+				regenMap = false;
+			} catch (FileNotFoundException j) {
+				System.out.println("ERR -- image file not found");
+				j.printStackTrace();
 			}
-			regenColors = false;
 		} else {
 			for (int y = 0; y < numTiles; y ++) {
+				for (int x = 0; x < numTiles; x ++) {
+					int nextCode = terrainMap[y][x];
+					addTerrainToSquare(kAs2D, x, y, nextCode);
+				}
 				kAs2D.drawLine(tileSize*y, 1, tileSize*y, height);
 				kAs2D.drawLine(1, tileSize*y, width, tileSize*y);
 			}
 		}
 
 		for (int ind=0; ind < numLayers; ind ++) {
-/*			System.out.println("About to paint layer " + ind + " of the terrain image.");
+/*			System.out.println("About to paint layer " + ind + " of the terrain image.");*/
 			if (terrainImage[ind] == null) {
-				System.out.println("\tERR -- it's null!");
-			}*/
-			kAs2D.drawImage(terrainImage[ind], null, 0, 0);
+//				System.out.println("\tERR -- it's null!");
+			} else {
+				kAs2D.drawImage(terrainImage[ind], null, 0, 0);
+			}
 /*			kAs2D.drawImage(terrainImage[ind], new AffineTransform(), null);*/
 		}
 	}
@@ -267,7 +308,7 @@ class WindowTest extends JPanel implements MouseListener {
 		int y = tileSize*n.getY();
 
 		AffineTransform result = new AffineTransform();
-		result.translate((double)  x, (double) y);
+		result.translate((double) x, (double) y);
 
 		ImageIcon icon = n.getIcon();
 		if (icon.getIconWidth() > icon.getIconHeight()) {
@@ -308,20 +349,24 @@ class WindowTest extends JPanel implements MouseListener {
 		if ((xCoord >= 0) && (xCoord < tilesX) &&
 		    (yCoord >= 0) && (yCoord < tilesY)) {
 			if (speed == 0) {
-				if (gameBoard[yCoord][xCoord] == null) {
-					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1587614848);
+				if (terrainMap[yCoord][xCoord] == 0) {
+					// No-op
+				} else if (gameBoard[yCoord][xCoord] == null) {
+					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1387614848);
 				} else if (gameBoard[yCoord][xCoord].getTeam() == currentTeam) {
-					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1587614848);
+					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1387614848);
 				}
 			} else {
-				if (gameBoard[yCoord][xCoord] == null) {
-					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1587614848);
+				if (terrainMap[yCoord][xCoord] == 0) {
+					// No-op
+				} else if (gameBoard[yCoord][xCoord] == null) {
+					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1387614848);
 					showMoveRange(speed-1, xCoord-1, yCoord);
 					showMoveRange(speed-1, xCoord+1, yCoord);
 					showMoveRange(speed-1, xCoord, yCoord-1);
 					showMoveRange(speed-1, xCoord, yCoord+1);
 				} else if (gameBoard[yCoord][xCoord].getTeam() == currentTeam) {
-					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1587614848);
+					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1387614848);
 					showMoveRange(speed-1, xCoord-1, yCoord);
 					showMoveRange(speed-1, xCoord+1, yCoord);
 					showMoveRange(speed-1, xCoord, yCoord-1);
@@ -461,8 +506,8 @@ class WindowTest extends JPanel implements MouseListener {
 	}
 }
 
-public class TmpGraphics extends JFrame {
-	public TmpGraphics(ArrayList<Character> sideA, ArrayList<Character> sideB) {
+public class TurnBasedSystem extends JFrame {
+	public TurnBasedSystem(ArrayList<Character> sideA, ArrayList<Character> sideB) {
 		initUI(sideA, sideB);
 	}
 
@@ -477,8 +522,8 @@ public class TmpGraphics extends JFrame {
 
 	public static void main(String[] argv) {
 		ArrayList<Character> sideOne = new ArrayList<Character>();
-		sideOne.add(new Archer(0,1,0));
-		sideOne.add(new Archer(0,2,0));
+		sideOne.add(new Archer(2,5,0));
+		sideOne.add(new Archer(2,6,0));
 
 		ArrayList<Character> sideTwo = new ArrayList<Character>();
 		sideTwo.add(new Soldier(3,1,1));

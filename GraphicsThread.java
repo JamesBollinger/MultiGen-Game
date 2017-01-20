@@ -15,7 +15,7 @@ public class GraphicsThread implements Runnable {
 	}
 
 	public void run() {
-		TmpGraphics manager = new TmpGraphics(savedFriendlyUnits, savedEnemyUnits);
+		TurnBasedSystem manager = new TurnBasedSystem(savedFriendlyUnits, savedEnemyUnits);
 		manager.setVisible(true);
 	}
 
