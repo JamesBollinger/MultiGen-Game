@@ -7,17 +7,20 @@
  * 
  */
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.geom.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
 
-class WindowTest extends JPanel implements MouseListener {
+class WindowTest extends JPanel implements MouseListener, ActionListener {
 	/* 
 	 * First, define some constants that are used
 	 * throughout the class.
@@ -44,7 +47,7 @@ class WindowTest extends JPanel implements MouseListener {
 	private int currentTeam;
 	private int numMoved;
 	private int state;
-	private final int MAP_CHOICES = 1;
+	private final int MAP_CHOICES = 2;
 
 	//Every single object in the game, is made up of the enemies and friendlies arrayLists declared below
 	Character[][] gameBoard;
@@ -61,6 +64,7 @@ class WindowTest extends JPanel implements MouseListener {
 	//The following represents the width/height(game currently is square)
 	public int tilesX = 8;
 	public int tilesY = 8;
+	private Timer watch;
 
 	public WindowTest(ArrayList<Character> playerUnits, ArrayList<Character> enemyUnits) {
 /*		entities = new ArrayList<Character>();
@@ -118,6 +122,9 @@ class WindowTest extends JPanel implements MouseListener {
 				throw new UnsupportedOperationException("ERR -- two units are on the same tile???");
 			}
 		}
+		watch = new Timer(1500, this);
+		watch.setInitialDelay(2000);
+		watch.start();
 	}
 
 	public synchronized int getState() {
@@ -153,6 +160,10 @@ class WindowTest extends JPanel implements MouseListener {
 	private boolean moveTest(Character selected, int x, int y){
 		if(x >= tilesX || y >= tilesY || x < 0 || y < 0)
 			return false;
+/*		* Now getting rid of this distance approach
+		* Since it does not factor in whether the destination
+		* is an ocean tile, etc.
+
 		int distance;
 		int initX = selected.getX();
 		int initY = selected.getY();
@@ -178,16 +189,25 @@ class WindowTest extends JPanel implements MouseListener {
 			return false;
 		}
 		//System.out.println("passed");
+*/
+		/* */
+		if ((0 == terrainMap[y][x]) ||
+		    (((terrainImage[1].getRGB(x*tileSize, y*tileSize)) + 1387614848) != 0)) {
+			return false;
+		}
 		return true;
 	}
 
 	//is the method called to move
-	public void move(Character selected, int x, int y){
+	public boolean move(Character selected, int x, int y){
 		if(moveTest(selected,x,y)){
 			//alters the characters position
 			gameBoard[selected.getY()][selected.getX()] = null;
 			selected.move(x, y);
 			gameBoard[y][x] = selected;
+			return true;
+		} else {
+			return false;
 		}
 	}
 
@@ -234,7 +254,7 @@ class WindowTest extends JPanel implements MouseListener {
 			try {
 				File randomMap = new File("maps/map" + choice + ".map");
 				Scanner reader = new Scanner(randomMap);
-				terrainDefs = new Image[6];
+				terrainDefs = new Image[7];
 				terrainDefs[0] = (new ImageIcon("terrain/ocean.png")).getImage();
 				terrainDefs[1] = (new ImageIcon("terrain/plains.png")).getImage();
 				terrainDefs[2] = (new ImageIcon("terrain/forest.png")).getImage();
@@ -242,6 +262,7 @@ class WindowTest extends JPanel implements MouseListener {
 //				terrainDefs[3] = new ImageIcon("terrain/hills.png");
 //				terrainDefs[4] = new ImageIcon("terrain/snow.png");
 				terrainDefs[5] = (new ImageIcon("terrain/sand.png")).getImage();
+				terrainDefs[6] = (new ImageIcon("terrain/mountain.png")).getImage();
 				for (int y = 0; y < numTiles; y ++) {
 					for (int x = 0; x < numTiles; x ++) {
 /*
@@ -417,6 +438,11 @@ class WindowTest extends JPanel implements MouseListener {
 	}
 
 	@Override
+	public void actionPerformed(ActionEvent ev) {
+		System.out.println("TIMER WENT OFF JUST NOW!");
+	}
+
+	@Override
 	public void mouseClicked(MouseEvent ev) {
 		int xClick = ev.getX();
 		int yClick = ev.getY();
@@ -469,18 +495,21 @@ class WindowTest extends JPanel implements MouseListener {
 			snapShotState = 3;
 		}
 		if (snapShotState == 3) {
-			move(highlighted, xInd, yInd);
-			moved.add(highlighted);
-			terrainImage[1] = null;
-			repaint();
-			setState(0);
-			int status = allUnitsMoved();
-			if (status > 0) {
-				currentTeam ++;
-				currentTeam %= 2;
-				moved.clear();
-			} else {
-				
+			boolean moveStatus;
+			moveStatus = move(highlighted, xInd, yInd);
+			if (moveStatus) {
+				moved.add(highlighted);
+				terrainImage[1] = null;
+				repaint();
+				setState(0);
+				int status = allUnitsMoved();
+				if (status > 0) {
+					currentTeam ++;
+					currentTeam %= 2;
+					moved.clear();
+				} else {
+					
+				}
 			}
 		}
 	}
