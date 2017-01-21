@@ -16,4 +16,17 @@ But it got me thinking as to whether we should rename the Character.java class.
 *   ActionListenerDemo/GraphicsLines.java -- Produces a grid of random-colored tiles, and clicking refreshes the coloring.
 *   TurnBasedSystem.java (reborn from "TmpGraphics") -- manages moving a unit around the map. (Keeps tack of player phase & enemy phase).
 
+###Map Codes
+0 = Ocean  
+1 = Plains  
+2 = Forest  
+3 = Hills  
+4 = Ice  
+5 = Sand  
+6 = Moutains  
 
+##Future plans for the mid-level/tactical end
+*   Develop an AI for the tactical map
+*   Display a menu for the user to choose certain actions to perform on a particular unit
+*   Ensuring that units do not spawn on Ocean tiles
+*   Allowing the client/user to click a terrain square to get more info about that square/tile (TBD)
