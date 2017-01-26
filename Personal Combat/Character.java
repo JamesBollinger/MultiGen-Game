@@ -9,16 +9,16 @@ import java.util.*;
  * accuracy(used in ranged attack calculations), and initiative(used to determine when this character is allowed to move)
 */
 public abstract class Character extends Entity {
-	int health, strength, speed, dodge, armour, accuracy, initiative;
+	int health, strength, magicalStrength, hitSpeed, luck, speed, agility, consitution, armour, accuracy, initiative;
 	int team; //0 for friendly, 1 for enemy, -1 for no team
 	boolean up = true;
 	boolean meleeWeapon, rangedWeapon = false;
 	Weapon main;
 	Weapon secondary;
 	ArrayList<String> statuses = new ArrayList<String>();
-	public Character(int x,int y,String img, int h, int s, int sp, int d, int ar,int ac, int i, int t){
+	public Character(int x,int y,String img, int h, int s, int ms, int hs, int sp, int l, int ag, int ar,int ac, int cs, int i, int t){
 		super(x,y,img);
-		health = h; strength = s; speed = sp; dodge = d; armour = ar;accuracy = ac; initiative = i; team = t;
+		health = h; strength = s; speed = sp; agility = ag; armour = ar;accuracy = ac; initiative = i; team = t; luck = l; consitution = cs; magicalStrength = ms; hitSpeed =  hs;
 	}
 	public void dealDamage(int d){
 		System.out.println(d);
@@ -57,7 +57,18 @@ public abstract class Character extends Entity {
 	public void setIntiative(int change){
 		intiative += change;	
 	}
-	
+	public void setMagicalStrength(int change){
+		magicalStrength += change;	
+	}
+	public void setLuck(int change){
+		luck += change;	
+	}
+	public void setConsitution(int change){
+		consitution += change;	
+	}
+	public void setHitSpeed(int change){
+		hitSpeed += change;	
+	}	
 	//Basic Combat Interactions
 	public void move(int x,int y){this.x = x;this.y = y;}
 	//The attack methods have been combined, with which weapons and whether it is a ranged attack being down at a lower level
@@ -73,6 +84,9 @@ public abstract class Character extends Entity {
 		else if(stat.equals("accuracy")) target.setAccuracy(change);
 		else if(stat.equals("intiative")) target.setIntiative(change);
 		else if(stat.equals("speed")) target.setSpeed(change);
+		else if(stat.equals("hitSpeed")) target.setHitSpeed(change);
+		else if(stat.equals("luck")) target.setLuck(change);
+		else if(stat.equals("constitution")) target.setConsitution(change);
 		else System.out.println("invalid attribute");
 	}
 	//For the statuses it will simply add the status string to a string arrayList and then at lower levels in conjunction with action listener, block actions or add modifiers
