@@ -47,7 +47,7 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 	private int currentTeam;
 	private int numMoved;
 	private int state;
-	private final int MAP_CHOICES = 2;
+	private final int MAP_CHOICES = 4;
 
 	//Every single object in the game, is made up of the enemies and friendlies arrayLists declared below
 	Character[][] gameBoard;
@@ -64,7 +64,8 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 	//The following represents the width/height(game currently is square)
 	public int tilesX = 8;
 	public int tilesY = 8;
-	private Timer watch;
+	private Timer enemyAIWatch;
+	private Timer animationWatch;
 
 	public WindowTest(ArrayList<Character> playerUnits, ArrayList<Character> enemyUnits) {
 /*		entities = new ArrayList<Character>();
@@ -122,9 +123,15 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 				throw new UnsupportedOperationException("ERR -- two units are on the same tile???");
 			}
 		}
-		watch = new Timer(1500, this);
-		watch.setInitialDelay(2000);
-		watch.start();
+		enemyAIWatch = new Timer(550, this);
+		enemyAIWatch.setInitialDelay(550);
+		enemyAIWatch.setActionCommand("enemyAIWatch");
+		enemyAIWatch.start();
+
+		animationWatch = new Timer(500, this);
+		animationWatch.setInitialDelay(500);
+		animationWatch.setActionCommand("animationWatch");
+		animationWatch.start();
 	}
 
 	public synchronized int getState() {
@@ -198,9 +205,28 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 		return true;
 	}
 
+	private boolean moveTestEnemy(Character selected, int x, int y){
+		if (x >= tilesX || y >= tilesY || x < 0 || y < 0)
+			return false;
+		return true;
+	}
+
 	//is the method called to move
 	public boolean move(Character selected, int x, int y){
 		if(moveTest(selected,x,y)){
+			//alters the characters position
+			gameBoard[selected.getY()][selected.getX()] = null;
+			selected.move(x, y);
+			gameBoard[y][x] = selected;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	//is the method called to move an ENEMY unit
+	public boolean moveEnemy(Character selected, int x, int y){
+		if(moveTestEnemy(selected,x,y)){
 			//alters the characters position
 			gameBoard[selected.getY()][selected.getX()] = null;
 			selected.move(x, y);
@@ -250,7 +276,11 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 		Graphics2D kAs2D = (Graphics2D) manager;
 		
 		if (regenMap) {
-			int choice = (int) (Math.random()*MAP_CHOICES);
+			/* Can uncomment this random-map-choice, but...*/
+			/* Note that if a character spawns on ocean,
+			 *  it will not be able to move... */
+/*			int choice = (int) (Math.random()*MAP_CHOICES);*/
+			int choice = 1;
 			try {
 				File randomMap = new File("maps/map" + choice + ".map");
 				Scanner reader = new Scanner(randomMap);
@@ -439,7 +469,91 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent ev) {
-		System.out.println("TIMER WENT OFF JUST NOW!");
+/*		System.out.println("TIMER WENT OFF JUST NOW!");*/
+		String type = ev.getActionCommand();
+		if (type.equals("enemyAIWatch")) {
+			/* First, process the enemy AI if it is needed. */
+			enemyAIWatch.stop();
+			if (currentTeam == 1) {
+
+				for (int enemyInd = 0; enemyInd < enemies.size(); enemyInd ++) {
+					Character nextEn = enemies.get(enemyInd);
+					EnemyAI mind = new EnemyAI(gameBoard, terrainMap, nextEn);
+					EnemyMove res = mind.decide();
+					System.out.println(res.toString());
+
+					/* Now execute the EnemyMove action */
+					Point recvDest = res.getDestination();
+					Point recvTar = res.getTarget();
+					int recvAct = res.getAction();
+					if (res.getDestination() == null) {
+						System.out.println("Error -- destination Point is null. Treating this as \"no movement\"");
+					} else {
+						int recvX = (int)(res.getDestination().getX());
+						int recvY = (int)(res.getDestination().getY());
+						boolean moveStatus;
+						moveStatus = moveEnemy(nextEn, recvX, recvY);
+						if (moveStatus) {
+							moved.add(nextEn);
+						} else {
+							System.out.println("ERROR IN MOVING ENEMY "
+							+ nextEn.toString() + " TO THE LOCATION (" +
+							recvX + ", " + recvY + ")");
+						}
+
+					}
+					/* ***
+					 * Leaving some space here...
+					 * so that we remember to deal with more complex actions,
+					 * like giving / using an item, etc.
+					 * */
+					switch (recvAct) {
+						case 0:
+							System.out.println("Enemy unit " + enemyInd + " will wait.");
+							break;
+						case 1:
+							
+							break;
+						case 2:
+							
+							break;
+						case 3:
+							
+							break;
+						case 4:
+							
+							break;
+						case 5:
+							
+							break;
+						case 6:
+							
+							break;
+						case 7:
+							
+							break;
+						default:
+							
+							break;
+					}
+					repaint();
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException j) {
+						System.out.println("ERR -- Thread interrupted. Cannot sleep. Whoops.");
+						j.printStackTrace();
+					}
+				}
+				moved.clear();
+				currentTeam = 0;
+			}
+			enemyAIWatch.start();
+	
+		} else if (type.equals("animationWatch")) {
+			animationWatch.stop();
+			/* --- TO DO: Fill in the animaton frame update --- */
+			animationWatch.start();
+		}
 	}
 
 	@Override
@@ -452,8 +566,15 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 		int snapShotState = getState();
 		if (snapShotState == 0) {
 			highlighted = gameBoard[yInd][xInd];
-			if ((highlighted.getTeam() != currentTeam) ||
+/* NOTE
+ * In the future edition, once an AI has been developed,
+ * change this to:
+ * */
+			if ((highlighted.getTeam() != 0) ||
 			    (hasMoved(highlighted))) {
+/****/
+/*			if ((highlighted.getTeam() != currentTeam) ||
+			    (hasMoved(highlighted))) {*/
 				System.out.println("cannot move that unit.");
 			} else {
 				if (highlighted != null) {
@@ -507,9 +628,9 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 					currentTeam ++;
 					currentTeam %= 2;
 					moved.clear();
-				} else {
-					
-				}
+				}/* else {
+					System.out.println("Not all player units have moved, apparently.");
+				}*/
 			}
 		}
 	}
@@ -551,12 +672,13 @@ public class TurnBasedSystem extends JFrame {
 
 	public static void main(String[] argv) {
 		ArrayList<Character> sideOne = new ArrayList<Character>();
-		sideOne.add(new Archer(2,5,0));
-		sideOne.add(new Archer(2,6,0));
+		sideOne.add(new Archer(3,5,0));
+		sideOne.add(new Archer(3,6,0));
+		sideOne.add(new Archer(4,6,0));
 
 		ArrayList<Character> sideTwo = new ArrayList<Character>();
-		sideTwo.add(new Soldier(3,1,1));
-		sideTwo.add(new Soldier(3,2,1));
+		sideTwo.add(new Soldier(4,3,1));
+		sideTwo.add(new Soldier(5,3,1));
 
 		GraphicsThread intermediary = new GraphicsThread(sideOne, sideTwo);
 		EventQueue.invokeLater(intermediary);
