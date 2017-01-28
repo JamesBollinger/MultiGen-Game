@@ -9,21 +9,32 @@ import java.util.*;
  * accuracy(used in ranged attack calculations), and initiative(used to determine when this character is allowed to move)
 */
 public abstract class Character extends Entity {
-	int health, strength, magicalStrength, hitSpeed, luck, speed, agility, consitution, armour, accuracy, initiative;
+	int health, strength, magicalStrength, hitSpeed, luck, speed, agility, consitution, armour, accuracy, magicalResistance initiative;
 	int team; //0 for friendly, 1 for enemy, -1 for no team
 	boolean up = true;
 	boolean meleeWeapon, rangedWeapon = false;
 	Weapon main;
 	Weapon secondary;
+	double k1 = .5; //temporary value
+        double k2 = .5; //temporary value
 	ArrayList<String> statuses = new ArrayList<String>();
-	public Character(int x,int y,String img, int h, int s, int ms, int hs, int sp, int l, int ag, int ar,int ac, int cs, int i, int t){
+	public Character(int x,int y,String img, int h, int s, int ms, int hs, int sp, int l, int ag, int ar,int ac, int cs, int i, int t, int mR){
 		super(x,y,img);
-		health = h; strength = s; speed = sp; agility = ag; armour = ar;accuracy = ac; initiative = i; team = t; luck = l; consitution = cs; magicalStrength = ms; hitSpeed =  hs;
+		health = h; strength = s; speed = sp; agility = ag; armour = ar;accuracy = ac; initiative = i; team = t; luck = l; consitution = cs; magicalStrength = ms; hitSpeed =  hs; magicalResitance = mR;
 	}
-	public void dealDamage(int d){
+	private boolean applyCritical(Character attacker,int critModifier){
+		int luckValue = ((double)(k1*attacker.luck+critModifier-k2*this.luck)/100);
+		return (luckValue > Math.random());
+	}
+	public void dealDamage(int d,Character attacker,int strength,int attackStrength,int critModifier){
 		System.out.println(d);
-		health -= d;
+		if(applyCritical(attacker,critModifier){
+			health -= d*2 + 0.4(attackStrength+strength);		
+		}else{
+			health -= d;
+		}
 		checkUp();
+
 	}
 	public void checkUp(){
 		if(health <= 0)
@@ -108,5 +119,8 @@ public abstract class Character extends Entity {
 			}
 		}
 		return null;
+	}
+	public void magicalAttack(Character target, int spellPower, int modifiersOffensive, int modifiersDefensive, int critModifiers){
+		target.dealDamage(spellPower + modifiersOffensive + magicalStrength - target.magicalResistance - modifiersDefensive,this,critModifiers);	
 	}
 }
