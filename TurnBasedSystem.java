@@ -20,7 +20,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
 
-class WindowTest extends JPanel implements MouseListener, ActionListener {
+class TacticalMapWindow extends JPanel implements MouseListener, ActionListener {
 	/* 
 	 * First, define some constants that are used
 	 * throughout the class.
@@ -48,6 +48,7 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 	private int numMoved;
 	private int state;
 	private final int MAP_CHOICES = 4;
+	private int mapFileChoice;
 
 	//Every single object in the game, is made up of the enemies and friendlies arrayLists declared below
 	Character[][] gameBoard;
@@ -67,7 +68,7 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 	private Timer enemyAIWatch;
 	private Timer animationWatch;
 
-	public WindowTest(ArrayList<Character> playerUnits, ArrayList<Character> enemyUnits) {
+	public TacticalMapWindow(ArrayList<Character> playerUnits, ArrayList<Character> enemyUnits) {
 /*		entities = new ArrayList<Character>();
 		entities.addAll(playerUnits);
 		entities.addAll(enemyUnits);*/
@@ -78,7 +79,7 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 		currentTeam = 0; // start the game in Player Phase
 		numMoved = 0;
 		terrainImage = new BufferedImage[3];
-		terrainMap = new int[numTiles][numTiles];
+		terrainMap = new int[tilesY][tilesX];
 /*		terrainImage[0] = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);*/
 		unitsImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
@@ -88,50 +89,79 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 
 		gameBoard = new Character[tilesY][tilesX];
 
-		/* Now for the fun part:
-		 * Using the data from the entities, set them on the map! */
-		System.out.println("Player Units List - at end of constructor -- " + friendlies.toString());
-		System.out.println("Enemy Units List - at end of constructor -- " + enemies.toString());
+		/* A new approach to "placing units on the map":
+		 * what we need is a new function, to place these units.
+		 * */
+		mapFileChoice = (int) ((Math.random()*MAP_CHOICES));
+		loadMapIcons();
+		readMap();
+		spawnUnits();
 
-		for (int playerInd = 0; playerInd < friendlies.size(); playerInd ++) {
-			int nextX = friendlies.get(playerInd).getX();
-			int nextY = friendlies.get(playerInd).getY();
-
-			/* Note: I may want to clarify what X and Y represent
-			* (because it's a grid, we may want to either
-			* rename X and Y as 'row' and 'column'
-			* or at least make sure we're on the same page 
-			* on what X and Y represent */
-			if (gameBoard[nextY][nextX] == null) {
-				gameBoard[nextY][nextX] = friendlies.get(playerInd);
-			} else {
-				throw new UnsupportedOperationException("ERR -- two units are on the same tile???");
-			}
-		}
-		for (int enemyInd = 0; enemyInd < enemies.size(); enemyInd ++) {
-			int nextX = enemies.get(enemyInd).getX();
-			int nextY = enemies.get(enemyInd).getY();
-
-			/* Note: I may want to clarify what X and Y represent
-			* (because it's a grid, we may want to either
-			* rename X and Y as 'row' and 'column'
-			* or at least make sure we're on the same page 
-			* on what X and Y represent */
-			if (gameBoard[nextY][nextX] == null) {
-				gameBoard[nextY][nextX] = enemies.get(enemyInd);
-			} else {
-				throw new UnsupportedOperationException("ERR -- two units are on the same tile???");
-			}
-		}
-		enemyAIWatch = new Timer(550, this);
-		enemyAIWatch.setInitialDelay(550);
+		enemyAIWatch = new Timer(350, this);
+		enemyAIWatch.setInitialDelay(350);
 		enemyAIWatch.setActionCommand("enemyAIWatch");
 		enemyAIWatch.start();
 
-		animationWatch = new Timer(500, this);
-		animationWatch.setInitialDelay(500);
+		animationWatch = new Timer(300, this);
+		animationWatch.setInitialDelay(300);
 		animationWatch.setActionCommand("animationWatch");
 		animationWatch.start();
+	}
+
+	private void spawnUnits() {
+		for (int playerInd = 0; playerInd < friendlies.size(); playerInd ++) {
+			Character nextUnit = friendlies.get(playerInd);
+			boolean canPlace = false;
+			for (int i=0; i < tilesY; i ++) {
+				for (int j=0; j < tilesX; j++) {
+					if ((terrainMap[i][j] != 0) && (gameBoard[i][j] == null)) {
+						/* This tile CAN be used as a spawning tile.*/
+						nextUnit.setX(j);
+						nextUnit.setY(i);
+						gameBoard[i][j] = nextUnit;
+						canPlace = true;
+						j=tilesX;
+						i=tilesY;
+					}
+				}
+			}
+			if (!canPlace) {
+				throw new UnsupportedOperationException("ERR -- not enough spaces for spawning player units");
+			}
+		}
+
+		for (int enemyInd = 0; enemyInd < enemies.size(); enemyInd ++) {
+			Character nextUnit = enemies.get(enemyInd);
+			boolean canPlace = false;
+			for (int i=(tilesY-1); i >= 0; i --) {
+				for (int j=(tilesX-1); j >= 0; j --) {
+					if ((terrainMap[i][j] != 0) && (gameBoard[i][j] == null)) {
+						/* This tile CAN be used as a spawning tile.*/
+						nextUnit.setX(j);
+						nextUnit.setY(i);
+						gameBoard[i][j] = nextUnit;
+						canPlace = true;
+						j=(-1);
+						i=(-1);
+					}
+				}
+			}
+			if (!canPlace) {
+				throw new UnsupportedOperationException("ERR -- not enough spaces for spawning enemy units");
+			}
+		}
+	}
+
+	private void loadMapIcons() {
+		terrainDefs = new Image[7];
+		terrainDefs[0] = (new ImageIcon("terrain/ocean.png")).getImage();
+		terrainDefs[1] = (new ImageIcon("terrain/plains.png")).getImage();
+		terrainDefs[2] = (new ImageIcon("terrain/forest.png")).getImage();
+		// these next two images will be created later.
+//		terrainDefs[3] = new ImageIcon("terrain/hills.png");
+//		terrainDefs[4] = new ImageIcon("terrain/snow.png");
+		terrainDefs[5] = (new ImageIcon("terrain/sand.png")).getImage();
+		terrainDefs[6] = (new ImageIcon("terrain/mountain.png")).getImage();
 	}
 
 	public synchronized int getState() {
@@ -272,58 +302,44 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 		}
 	}
 
+	private void readMap() {
+		try {
+			File randomMap = new File("maps/map" + mapFileChoice + ".map");
+			Scanner reader = new Scanner(randomMap);
+			for (int y = 0; y < tilesY; y ++) {
+				for (int x = 0; x < tilesX; x ++) {
+					int nextCode;
+					nextCode = reader.nextInt();
+					terrainMap[y][x] = nextCode;
+				}
+			}
+			reader.close();
+			regenMap = false;
+		} catch (FileNotFoundException j) {
+			System.out.println("ERR -- image file not found");
+			j.printStackTrace();
+		}
+
+	}
+
+	private void renderMap(Graphics2D renderer) {
+		for (int y = 0; y < tilesY; y ++) {
+			for (int x = 0; x < tilesX; x ++) {
+				addTerrainToSquare(renderer, x, y, terrainMap[y][x]);
+			}
+			renderer.drawLine(tileSize*y, 1, tileSize*y, height);
+			renderer.drawLine(1, tileSize*y, width, tileSize*y);
+		}
+	}
+
 	public void drawBoard(Graphics manager) {
 		Graphics2D kAs2D = (Graphics2D) manager;
 		
 		if (regenMap) {
-			/* Can uncomment this random-map-choice, but...*/
-			/* Note that if a character spawns on ocean,
-			 *  it will not be able to move... */
-/*			int choice = (int) (Math.random()*MAP_CHOICES);*/
-			int choice = 1;
-			try {
-				File randomMap = new File("maps/map" + choice + ".map");
-				Scanner reader = new Scanner(randomMap);
-				terrainDefs = new Image[7];
-				terrainDefs[0] = (new ImageIcon("terrain/ocean.png")).getImage();
-				terrainDefs[1] = (new ImageIcon("terrain/plains.png")).getImage();
-				terrainDefs[2] = (new ImageIcon("terrain/forest.png")).getImage();
-				// these next two images will be created later.
-//				terrainDefs[3] = new ImageIcon("terrain/hills.png");
-//				terrainDefs[4] = new ImageIcon("terrain/snow.png");
-				terrainDefs[5] = (new ImageIcon("terrain/sand.png")).getImage();
-				terrainDefs[6] = (new ImageIcon("terrain/mountain.png")).getImage();
-				for (int y = 0; y < numTiles; y ++) {
-					for (int x = 0; x < numTiles; x ++) {
-/*
-						int randomRed = (int) ((Math.random()*4096));
-						int randomBlue = (int) ((Math.random()*4096));
-						int randomGreen = (int) ((Math.random()*4096));
-						int sum = (randomRed * randomBlue * randomGreen);
-						if ((sum + 1587614848) != 0) {
-							colorSquare(0, x*tileSize, y*tileSize, sum);
-						} else {
-							colorSquare(0, x*tileSize, y*tileSize, 122110000-sum);
-						}
-*/
-						int nextCode;
-						nextCode = reader.nextInt();
-						terrainMap[y][x] = nextCode;
-/*						System.out.println("ABOUT TO CALL addTerrainToSquare() on the code " + nextCode);*/
-						addTerrainToSquare(kAs2D, x, y, nextCode);
-					}
-					kAs2D.drawLine(tileSize*y, 1, tileSize*y, height);
-					kAs2D.drawLine(1, tileSize*y, width, tileSize*y);
-				}
-				reader.close();
-				regenMap = false;
-			} catch (FileNotFoundException j) {
-				System.out.println("ERR -- image file not found");
-				j.printStackTrace();
-			}
+			renderMap(kAs2D);
 		} else {
-			for (int y = 0; y < numTiles; y ++) {
-				for (int x = 0; x < numTiles; x ++) {
+			for (int y = 0; y < tilesY; y ++) {
+				for (int x = 0; x < tilesX; x ++) {
 					int nextCode = terrainMap[y][x];
 					addTerrainToSquare(kAs2D, x, y, nextCode);
 				}
@@ -562,7 +578,9 @@ class WindowTest extends JPanel implements MouseListener, ActionListener {
 		int yClick = ev.getY();
 		int xInd = (xClick / tileSize);
 		int yInd = (yClick / tileSize);
+/*
 		System.out.println("Mouse click occurred at (" + xClick + ", " + yClick + ").");
+*/
 		int snapShotState = getState();
 		if (snapShotState == 0) {
 			highlighted = gameBoard[yInd][xInd];
@@ -662,7 +680,7 @@ public class TurnBasedSystem extends JFrame {
 	}
 
 	private void initUI(ArrayList<Character> ally, ArrayList<Character> opponent) {
-		WindowTest allGraphics = new WindowTest(ally, opponent);
+		TacticalMapWindow allGraphics = new TacticalMapWindow(ally, opponent);
 		add(allGraphics);
 		setTitle("Mid-Level Simulation");
 		setSize(720, 720);

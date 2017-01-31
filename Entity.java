@@ -47,4 +47,12 @@ public abstract class Entity {
 	public ImageIcon getIcon() {
 		return sprite;
 	}
+
+	public void setX(int posX) {
+		x = posX;
+	}
+
+	public void setY(int posY) {
+		y = posY;
+	}
 }

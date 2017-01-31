@@ -73,7 +73,7 @@ public class EnemyAI {
 */
 
 		if ((enemySide/*+1*/) < playerUnits) {
-			System.out.println("\tBRAVE SIR ROBIN RAN AWAY");
+			System.out.println("\\t\"BRAVE SIR ROBIN RAN AWAY\"");
 			if ((opponentSideNW > opponentSideNE) &&
 			    (opponentSideNW > opponentSideSE) &&
 			    (opponentSideNW > opponentSideSW)) {
@@ -182,10 +182,10 @@ public class EnemyAI {
 			}
 		} else {
 			/* No need to retreat.... yet. */
-			System.out.println("\t\"Our fury is boundless!\"");
-			Point dest = (new Point(currentEnemy.getX(), currentEnemy.getY()));
-			EnemyMove stay = new EnemyMove(dest, null, 0);
-			return stay;
+			System.out.println("\t\"My life for Auir!\"");
+			Point destination = eagerTravelNW();
+			EnemyMove attack = new EnemyMove(destination, null, 0);
+			return attack;
 		}
 	}
 

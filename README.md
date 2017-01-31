@@ -11,10 +11,10 @@ Actually, this may be irrelevant, since we're not going to be using the wrapper 
 But it got me thinking as to whether we should rename the Character.java class.  
 
 
-###Programs Developed so Far
+###Programs Developed so Far (these programs work!)
 *   ActionListenerDemo/GraphicsTest.java -- Produces a grid of random-colored tiles, and clicking transfers a tile's color to a different tile.
 *   ActionListenerDemo/GraphicsLines.java -- Produces a grid of random-colored tiles, and clicking refreshes the coloring.
-*   TurnBasedSystem.java (reborn from "TmpGraphics") -- manages moving a unit around the map. (Keeps tack of player phase & enemy phase).
+*   ./TurnBasedSystem.java (reborn from "TmpGraphics") -- manages moving a unit around the map. (Keeps tack of player phase & enemy phase).
 
 ###Map Codes
 0 = Ocean  
@@ -25,8 +25,10 @@ But it got me thinking as to whether we should rename the Character.java class.
 5 = Sand  
 6 = Moutains  
 
-##Future plans for the mid-level/tactical end
-*   Develop an AI for the tactical map
-*   Display a menu for the user to choose certain actions to perform on a particular unit
-*   Ensuring that units do not spawn on Ocean tiles
-*   Allowing the client/user to click a terrain square to get more info about that square/tile (TBD)
+##Future plans for the mid-level/tactical end (these are still in development)
+*   Ensuring that units do not spawn on Ocean tiles (ok, a main mechanism has been added to do this; but I might improve it later)
+*   Develop an AI for the tactical map (again, a basic one exists, but improvements are in progress)
+*   Display a menu for the user to choose certain actions to perform on a particular unit (add a new image overlay. But make sure it's placed in a reasonable location, on screen [not partly off-screen] regardless of the unit location.)
+*     Allowing the client/user to click a terrain square to get more info about that square/tile (TBD)
+
+
