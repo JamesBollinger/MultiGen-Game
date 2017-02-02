@@ -9,6 +9,7 @@ We should probably still use the google docs for brainstorming new general ideas
 NOTE (Jan 15th, VC): You know what I just realized? "Character" is the name of an existing wrapper class in Java.  
 Actually, this may be irrelevant, since we're not going to be using the wrapper class.  
 But it got me thinking as to whether we should rename the Character.java class.  
+Seriously -- should we rename Character.java -> Unit.java ? I could do this, and replace all instances of the word, if you want. -VC  
 
 
 ###Programs Developed so Far (these programs work!)

@@ -29,13 +29,15 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	 * Then all the references will be updated.
 	 * 
 	 * */
-	private final int numTiles = 8;
-	private final int width = 640;
-	private final int height = 640;
-	private final int tileSize  = 80; // number of pixels spanning the height of each tile
+	private final int WIDTH = 640;
+	private final int HEIGHT = 640;
+	private final int TILE_SIZE  = 80; // number of pixels spanning the HEIGHT of each tile
+	private final int MAP_CHOICES = 4; /* number of map choices possible */
 
 	private int mouseState; // To determine what to do on mouse clicks... you'll see
 	private boolean regenMap;
+	private boolean showMenu;
+	private Point menuPoint;
 /*	private ArrayList<Character> entities;    */
 /*	private Color storedColor;    */
 	private int numLayers;
@@ -47,7 +49,6 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	private int currentTeam;
 	private int numMoved;
 	private int state;
-	private final int MAP_CHOICES = 4;
 	private int mapFileChoice;
 
 	//Every single object in the game, is made up of the enemies and friendlies arrayLists declared below
@@ -62,7 +63,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	ArrayList<Character> enemies;
 	ArrayList<Character> moved;
 
-	//The following represents the width/height(game currently is square)
+	//The following represents the WIDTH/HEIGHT(game currently is square)
 	public int tilesX = 8;
 	public int tilesY = 8;
 	private Timer enemyAIWatch;
@@ -80,8 +81,8 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		numMoved = 0;
 		terrainImage = new BufferedImage[3];
 		terrainMap = new int[tilesY][tilesX];
-/*		terrainImage[0] = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);*/
-		unitsImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+/*		terrainImage[0] = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);*/
+		unitsImage = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
 
 		friendlies = playerUnits;
 		enemies = enemyUnits;
@@ -157,9 +158,9 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		terrainDefs[0] = (new ImageIcon("terrain/ocean.png")).getImage();
 		terrainDefs[1] = (new ImageIcon("terrain/plains.png")).getImage();
 		terrainDefs[2] = (new ImageIcon("terrain/forest.png")).getImage();
-		// these next two images will be created later.
-//		terrainDefs[3] = new ImageIcon("terrain/hills.png");
-//		terrainDefs[4] = new ImageIcon("terrain/snow.png");
+		/* these next two images will be created later. */
+/*		terrainDefs[3] = new ImageIcon("terrain/hills.png");*/
+/*		terrainDefs[4] = new ImageIcon("terrain/snow.png");*/
 		terrainDefs[5] = (new ImageIcon("terrain/sand.png")).getImage();
 		terrainDefs[6] = (new ImageIcon("terrain/mountain.png")).getImage();
 	}
@@ -229,12 +230,16 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 */
 		/* */
 		if ((0 == terrainMap[y][x]) ||
-		    (((terrainImage[1].getRGB(x*tileSize, y*tileSize)) + 1387614848) != 0)) {
+		    (((terrainImage[1].getRGB(x*TILE_SIZE, y*TILE_SIZE)) + 1387614848) != 0)) {
 			return false;
 		}
 		return true;
 	}
 
+	/* A simpler moveTest, for enemies.
+	 * Does not depend on the size of a colored map,
+	 * since the EnemyAI takes care of movement decisions.
+	 * */
 	private boolean moveTestEnemy(Character selected, int x, int y){
 		if (x >= tilesX || y >= tilesY || x < 0 || y < 0)
 			return false;
@@ -267,14 +272,20 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		}
 	}
 
+	/***
+	 * Colors a particular square of the grid a particular color,
+	 * on the given layer number (ranging from 0 to numLayers
+	 * */
 	private void colorSquare(int layer, int xInd, int yInd, int color) {
-		int r = tileSize*(xInd / tileSize);
-		int s = tileSize*(yInd / tileSize);
-		for (int i = 0; i < tileSize; i ++) {
-			for (int j = 0; j < tileSize; j ++) {
-/*				if ((i == 0) && (j == 0)) {
+		int r = TILE_SIZE*(xInd / TILE_SIZE);
+		int s = TILE_SIZE*(yInd / TILE_SIZE);
+		for (int i = 0; i < TILE_SIZE; i ++) {
+			for (int j = 0; j < TILE_SIZE; j ++) {
+/*
+				if ((i == 0) && (j == 0)) {
 					System.out.println("\tpixel has been colored " + color);
-				}*/
+				}
+*/
 				terrainImage[layer].setRGB(r+i, s+j, color);
 			}
 		}
@@ -283,16 +294,19 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	private void addTerrainToSquare(Graphics2D gm, int c, int r, int code) {
 		double scaleFactor;
 		AffineTransform placement = new AffineTransform();
-		placement.translate((double) (c*tileSize), (double) (r*tileSize));
-		scaleFactor = (((tileSize)) / (double) (terrainDefs[code].getWidth(this)));
+		placement.translate((double) (c*TILE_SIZE), (double) (r*TILE_SIZE));
+		scaleFactor = (((TILE_SIZE)) / (double) (terrainDefs[code].getWidth(this)));
 		placement.scale(scaleFactor, scaleFactor);
 		gm.drawImage(terrainDefs[code], placement, this);
 	}
 
 	public void drawTeamPhaseMessage(Graphics k, int num) {
 		Graphics2D kAs2D = (Graphics2D) k;
+/*		System.out.println("Just converted graphics obj, about to switch/case on the team code");*/
 		if (num == 0) {
+/*			System.out.println("PLAYER PHASE about to type it up");*/
 			kAs2D.drawString("PLAYER PHASE", 5, 15);
+/*			System.out.println("That took too long.");*/
 		} else if (num == 1) {
 			kAs2D.drawString("ENEMY PHASE", 5, 15);
 		} else if (num == 2) {
@@ -327,8 +341,8 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 			for (int x = 0; x < tilesX; x ++) {
 				addTerrainToSquare(renderer, x, y, terrainMap[y][x]);
 			}
-			renderer.drawLine(tileSize*y, 1, tileSize*y, height);
-			renderer.drawLine(1, tileSize*y, width, tileSize*y);
+			renderer.drawLine(TILE_SIZE*y, 1, TILE_SIZE*y, HEIGHT);
+			renderer.drawLine(1, TILE_SIZE*y, WIDTH, TILE_SIZE*y);
 		}
 	}
 
@@ -343,15 +357,19 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 					int nextCode = terrainMap[y][x];
 					addTerrainToSquare(kAs2D, x, y, nextCode);
 				}
-				kAs2D.drawLine(tileSize*y, 1, tileSize*y, height);
-				kAs2D.drawLine(1, tileSize*y, width, tileSize*y);
+				kAs2D.drawLine(TILE_SIZE*y, 1, TILE_SIZE*y, HEIGHT);
+				kAs2D.drawLine(1, TILE_SIZE*y, WIDTH, TILE_SIZE*y);
 			}
 		}
 
-		for (int ind=0; ind < numLayers; ind ++) {
+/* in general, you can change the "2" (the upper bound of the conntrol variable
+ * to be numLayers-1
+ * (the final layer is treated separately, as a menu layer
+ * */
+		for (int ind=0; ind < 2; ind ++) {
 /*			System.out.println("About to paint layer " + ind + " of the terrain image.");*/
 			if (terrainImage[ind] == null) {
-//				System.out.println("\tERR -- it's null!");
+/*				System.out.println("\tERR -- it's null!");*/
 			} else {
 				kAs2D.drawImage(terrainImage[ind], null, 0, 0);
 			}
@@ -369,18 +387,35 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		}
 	}
 
+	public void drawMenu(Graphics renderer) {
+		Graphics2D rend2d = (Graphics2D) renderer;
+		int yPos = (int) (menuPoint.getY());
+		int xPos = (int) (menuPoint.getX());
+
+		rend2d.drawImage(terrainImage[2], null, 0, 0);
+		rend2d.drawString("Attack", xPos, yPos+18);
+		rend2d.drawString("Item", xPos, yPos+36);
+		rend2d.drawString("Trade", xPos, yPos+54);
+		rend2d.drawString("Rescue", xPos, yPos+72);
+		rend2d.drawString("Drop", xPos, yPos+90);
+		rend2d.drawString("Pass", xPos, yPos+108);
+		rend2d.drawString("Ability", xPos, yPos+126);
+		rend2d.drawString("Wait", xPos, yPos+144);
+		
+	}
+
 	private AffineTransform getTransformToResize(Character n) {
 		double scaleFactor, difference;
-		int x = tileSize*n.getX();
-		int y = tileSize*n.getY();
+		int x = TILE_SIZE*n.getX();
+		int y = TILE_SIZE*n.getY();
 
 		AffineTransform result = new AffineTransform();
 		result.translate((double) x, (double) y);
 
 		ImageIcon icon = n.getIcon();
 		if (icon.getIconWidth() > icon.getIconHeight()) {
-			scaleFactor = (((tileSize)) / (double) (icon.getIconWidth()));
-			difference = (/*icon.getIconWidth()*/tileSize - (scaleFactor*(icon.getIconHeight())));
+			scaleFactor = (((TILE_SIZE)) / (double) (icon.getIconWidth()));
+			difference = (/*icon.getIconWidth()*/TILE_SIZE - (scaleFactor*(icon.getIconHeight())));
 			if (difference <= 0) {
 				difference = 0.0;
 			} else {
@@ -388,8 +423,8 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 			}
 			result.translate(0, difference);
 		} else {
-			scaleFactor = (tileSize / ((double) ((icon.getIconHeight()))));
-			difference = (/*icon.getIconHeight()*/tileSize - (scaleFactor*(icon.getIconWidth())));
+			scaleFactor = (TILE_SIZE / ((double) ((icon.getIconHeight()))));
+			difference = (/*icon.getIconHeight()*/TILE_SIZE - (scaleFactor*(icon.getIconWidth())));
 			if (difference > 0) {
 				difference /= (2.0);
 			} else {
@@ -419,21 +454,21 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 				if (terrainMap[yCoord][xCoord] == 0) {
 					// No-op
 				} else if (gameBoard[yCoord][xCoord] == null) {
-					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1387614848);
+					colorSquare(1, xCoord*TILE_SIZE, yCoord*TILE_SIZE, -1387614848);
 				} else if (gameBoard[yCoord][xCoord].getTeam() == currentTeam) {
-					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1387614848);
+					colorSquare(1, xCoord*TILE_SIZE, yCoord*TILE_SIZE, -1387614848);
 				}
 			} else {
 				if (terrainMap[yCoord][xCoord] == 0) {
 					// No-op
 				} else if (gameBoard[yCoord][xCoord] == null) {
-					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1387614848);
+					colorSquare(1, xCoord*TILE_SIZE, yCoord*TILE_SIZE, -1387614848);
 					showMoveRange(speed-1, xCoord-1, yCoord);
 					showMoveRange(speed-1, xCoord+1, yCoord);
 					showMoveRange(speed-1, xCoord, yCoord-1);
 					showMoveRange(speed-1, xCoord, yCoord+1);
 				} else if (gameBoard[yCoord][xCoord].getTeam() == currentTeam) {
-					colorSquare(1, xCoord*tileSize, yCoord*tileSize, -1387614848);
+					colorSquare(1, xCoord*TILE_SIZE, yCoord*TILE_SIZE, -1387614848);
 					showMoveRange(speed-1, xCoord-1, yCoord);
 					showMoveRange(speed-1, xCoord+1, yCoord);
 					showMoveRange(speed-1, xCoord, yCoord-1);
@@ -443,27 +478,101 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		}
 	}
 
-	private int allUnitsMoved() {
+	/* Renders the "halt menu" in the proper location
+	 * (this is to be called in state 5, when we wait for the user 
+	 * to decide what to do with a unit)
+	 * */
+	private void makeHaltMenu(int x, int y) {
+		/* Make a 60x80 rectangle, filled with a light blue color */
+		terrainImage[2] = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
+		showMenu = true;
+		int xVal = x;
+		int yVal = y;
+		int widthSpace = (WIDTH - xVal);
+		int heightSpace = (yVal);
+		if ((widthSpace < 120) && (heightSpace < 160)) {
+			/* generate it in the lower-left rather than upper-right */
+/*			System.out.println("\tabout to generate a blue menu in the lower-left");*/
+			int yBound = (yVal + 160);
+			int xBound = xVal;
+			for (int i = yVal; i < yBound; i ++) {
+				for (int j = (xBound-120); j < xBound; j ++) {
+					terrainImage[2].setRGB(j, i, -1658327104); /* a light blue color */
+				}
+			}
+			menuPoint = new Point(xBound-120, yVal);
+		} else if ((widthSpace < 120) && (heightSpace >= (HEIGHT-160))) {
+			/* show menu in the upper-left corner */
+			for (int i = (yVal-160); i < yVal; i ++) {
+				for (int j = (xVal-120); j < xVal; j ++) {
+					terrainImage[2].setRGB(j, i, -1658327104); /* a light blue color */
+				}
+			}
+			menuPoint = new Point(xVal-120, yVal-160);
+		} else if ((widthSpace >= (WIDTH-120)) && (heightSpace < 160)) {
+			/* show menu in the lower-right corner */
+			int yBound = (yVal + 160);
+			int xBound = (xVal + 120);
+			for (int i = yVal; i < yBound; i ++) {
+				for (int j = xVal; j < xBound; j ++) {
+					terrainImage[2].setRGB(j, i, -1658327104); /* a light blue color */
+				}
+			}
+			menuPoint = new Point(xVal, yVal);
+		} else if (heightSpace < 160) {
+			/* show menu in the lower-right corner */
+			int yBound = (yVal + 160);
+			int xBound = (xVal + 120);
+			for (int i = yVal; i < yBound; i ++) {
+				for (int j = xVal; j < xBound; j ++) {
+					terrainImage[2].setRGB(j, i, -1658327104); /* a light blue color */
+				}
+			}
+			menuPoint = new Point(xVal, yVal);
+		} else if (widthSpace < 120) {
+			/* show menu in the lower-left corner */
+			int yBound = (yVal + 160);
+			int xBound = xVal;
+			for (int i = yVal; i < yBound; i ++) {
+				for (int j = (xBound-120); j < xBound; j ++) {
+					terrainImage[2].setRGB(j, i, -1658327104); /* a light blue color */
+				}
+			}
+			menuPoint = new Point(xBound-120, yVal);
+		} else {
+/*			System.out.println("\tabout to generate a blue menu in the upper-right");*/
+			int yBound = yVal;
+			int xBound = (xVal + 120);
+			for (int i = (yVal-160); i < yBound; i ++) {
+				for (int j = xVal; j < xBound; j ++) {
+					terrainImage[2].setRGB(j, i, -1658327104);
+				}
+			}
+			menuPoint = new Point(xVal, yVal-160);
+		}
+	}
+
+	private boolean allUnitsMoved() {
 		if (currentTeam == 0) {
 			if (moved.size() != friendlies.size()) {
-				return 0;
+				return false;
 			}
-			return 1;
+			return true;
 /*
 			for (int ind = 0; ind < friendlies.size(); ind ++) {
 				if ( == ) {
-					return 0;
+					return false;
 				}
 			}
-			return 1;
+			return true;
 */
 		} else if (currentTeam == 1) {
 			if (moved.size() != enemies.size()) {
-				return 0;
+				return false;
 			}
-			return 1;
+			return true;
 		}
-		return 1;
+		return true;
 	}
 
 	private boolean hasMoved(Character x) {
@@ -477,10 +586,22 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 
 	@Override
 	public void paintComponent(Graphics gm) {
+	/* Note: the many commented println statements
+	 * were of course from a previous session of debugging. 
+	 * Feel free to delete them if they no longer serve a 
+	 * purpose
+	 * */
 		super.paintComponent(gm);
+/*		System.out.println("\tabout to draw board");*/
 		drawBoard(gm);
+/*		System.out.println("\tabout to draw icons");*/
 		drawIcons(gm);
+/*		System.out.println("\tabout to draw team phase message");*/
 		drawTeamPhaseMessage(gm, currentTeam);
+		if (showMenu) {
+			drawMenu(gm);
+		}
+/*		System.out.println("\tabout to finish drawing :P");*/
 	}
 
 	@Override
@@ -576,29 +697,22 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	public void mouseClicked(MouseEvent ev) {
 		int xClick = ev.getX();
 		int yClick = ev.getY();
-		int xInd = (xClick / tileSize);
-		int yInd = (yClick / tileSize);
+		int xInd = (xClick / TILE_SIZE);
+		int yInd = (yClick / TILE_SIZE);
 /*
 		System.out.println("Mouse click occurred at (" + xClick + ", " + yClick + ").");
 */
 		int snapShotState = getState();
 		if (snapShotState == 0) {
 			highlighted = gameBoard[yInd][xInd];
-/* NOTE
- * In the future edition, once an AI has been developed,
- * change this to:
- * */
 			if ((highlighted.getTeam() != 0) ||
 			    (hasMoved(highlighted))) {
-/****/
-/*			if ((highlighted.getTeam() != currentTeam) ||
-			    (hasMoved(highlighted))) {*/
 				System.out.println("cannot move that unit.");
 			} else {
 				if (highlighted != null) {
 					setState(1);
 /*					System.out.println("Set state to 1 upon that click you just made!");*/
-					terrainImage[1] = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+					terrainImage[1] = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
 /*					System.out.println("Initialized a new BufferedImage at index 1 of the terrain array!");
 					System.out.println("showMoveRange() about to be called, at col = " + xInd + ", row = " + yInd);*/
 					showMoveRange(highlighted.getSpeed(), xInd, yInd);
@@ -621,14 +735,14 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 			snapShotState = 2;
 			setState(2);
 		}
-		while (snapShotState == 2) {
-		/****
-		 * Process the animation, which will probably take many frames
-		 * and thus justifies a while-loop.
-		 * (Later we might find a better design for this.)
+		/* Idea: probably change this to an if, or better yet, 
+		 * a switch/case structure...
 		 * 
+		 * but I will not change it yet, until I get
+		 * some basic animation working first...
 		 * */
-		//	snapShotState = getState();
+		while (snapShotState == 2) {
+//			snapShotState = getState();
 			repaint();
 			setState(3);
 			snapShotState = 3;
@@ -640,16 +754,27 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 				moved.add(highlighted);
 				terrainImage[1] = null;
 				repaint();
-				setState(0);
-				int status = allUnitsMoved();
-				if (status > 0) {
-					currentTeam ++;
-					currentTeam %= 2;
-					moved.clear();
-				}/* else {
-					System.out.println("Not all player units have moved, apparently.");
-				}*/
+				setState(4);
+				snapShotState = 4;
 			}
+		}
+		if (snapShotState == 4) {
+			makeHaltMenu(xClick, yClick);
+			repaint();
+			setState(5);
+		} else if (snapShotState == 5) {
+			showMenu = false;
+			terrainImage[2] = null;
+			/* Finalize the move */
+			repaint();
+			if (allUnitsMoved()) {
+				currentTeam ++;
+				currentTeam %= 2;
+				moved.clear();
+			} else {
+/*				System.out.println("Not all player units have moved, apparently.");*/
+			}
+			setState(0);
 		}
 	}
 

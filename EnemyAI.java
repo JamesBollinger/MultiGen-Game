@@ -72,8 +72,8 @@ public class EnemyAI {
 			+ " players to the SouthWest,");
 */
 
-		if ((enemySide/*+1*/) < playerUnits) {
-			System.out.println("\\t\"BRAVE SIR ROBIN RAN AWAY\"");
+		if ((enemySide+1) < playerUnits) {
+			System.out.println("\t\"BRAVE SIR ROBIN RAN AWAY\"");
 			if ((opponentSideNW > opponentSideNE) &&
 			    (opponentSideNW > opponentSideSE) &&
 			    (opponentSideNW > opponentSideSW)) {
