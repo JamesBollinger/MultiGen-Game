@@ -5,21 +5,13 @@
  */
 public class Soldier extends Character {
 	public Soldier(int x, int y, int t){
-		super(x,y,"Archer.png",10,5,6,4,3,1,(int)(Math.random()*10), t);
-		main = new Sword(4,8,7);
-		secondary = null;
-		if(main.ranged || secondary.ranged){
-			rangedWeapon = true;	
-		}
-		if(main.melee || secondary.melee){
-			meleeWeapon = true;	
-		}
-		
+		//These values may be shifted up or down for reasonablness/balance
+		super(x,y,"Archer.png",10,6,0,2,3,4,3,7,4,7,t,3,new Sword(4,8,7),null);
 	}
 	public String toString(){
 		return "S";
 	}
 	public void attack(Character target, Weapon weapon){
-		sword.attack(this, target);
+		weapon.attack(this, target);
 	}
 }
