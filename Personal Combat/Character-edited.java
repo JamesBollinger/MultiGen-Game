@@ -9,7 +9,7 @@ import java.util.*;
  * accuracy(used in ranged attack calculations), and initiative(used to determine when this character is allowed to move)
 */
 public abstract class Character extends Entity {
-	int health, strength, magicalStrength, hitSpeed, luck, speed, agility, consitution, armour, accuracy, magicalResistance, initiative;
+	int health, strength, magicalStrength, hitSpeed, luck, speed, agility, consitution, armour, accuracy, magicalResistance;
 	int team; //0 for friendly, 1 for enemy, -1 for no team
 	boolean up = true;
 	boolean meleeWeapon, rangedWeapon = false;
@@ -18,14 +18,16 @@ public abstract class Character extends Entity {
 	double k1 = .5; //temporary value
         double k2 = .5; //temporary value
 	ArrayList<String> statuses = new ArrayList<String>();
-	public Character(int x,int y,String img, int h, int s, int ms, int hs, int sp, int l, int ag, int ar,int ac, int cs, int i, int t, int mR){
+	public Character(int x,int y,String img, int h, int s, int ms, int hs, int sp, int l, int ag, int ar,int ac, int cs, int t, int mR){
 		super(x,y,img);
-		health = h; strength = s; speed = sp; agility = ag; armour = ar;accuracy = ac; initiative = i; team = t; luck = l; consitution = cs; magicalStrength = ms; hitSpeed =  hs; magicalResistance = mR;
+		health = h; strength = s; speed = sp; agility = ag; armour = ar; accuracy = ac; team = t; luck = l; consitution = cs; magicalStrength = ms; hitSpeed =  hs; magicalResistance = mR;
 	}
+	//This is the primary method for determining if an attack scores a critical
 	private boolean applyCritical(Character attacker,int critModifier){
 		int luckValue = ((double)(k1*attacker.luck+critModifier-k2*this.luck)/100);
 		return (luckValue > Math.random());
 	}
+	//This takes in the baseline damage, and the attacker, his strength, and his attackStrength for critical calculations
 	public void dealDamage(int d,Character attacker,int strength,int attackStrength,int critModifier){
 		System.out.println(d);
 		if(applyCritical(attacker,critModifier)){
@@ -36,6 +38,7 @@ public abstract class Character extends Entity {
 		checkUp();
 
 	}
+	//constantly checks if the target is dead or not
 	public void checkUp(){
 		if(health <= 0)
 			up = false;
@@ -65,9 +68,6 @@ public abstract class Character extends Entity {
 	public void setAccuracy(int change){
 		accuracy += change;	
 	}
-	public void setIntiative(int change){
-		intiative += change;	
-	}
 	public void setMagicalStrength(int change){
 		magicalStrength += change;	
 	}
@@ -79,7 +79,13 @@ public abstract class Character extends Entity {
 	}
 	public void setHitSpeed(int change){
 		hitSpeed += change;	
-	}	
+	}
+	public void setArmor(int change){
+		armour += change;	
+	}
+	public void setMagicalResistance(int change){
+		magicalResistance += change;	
+	}
 	//Basic Combat Interactions
 	public void move(int x,int y){this.x = x;this.y = y;}
 	//The attack methods have been combined, with which weapons and whether it is a ranged attack being down at a lower level
@@ -98,6 +104,8 @@ public abstract class Character extends Entity {
 		else if(stat.equals("hitSpeed")) target.setHitSpeed(change);
 		else if(stat.equals("luck")) target.setLuck(change);
 		else if(stat.equals("constitution")) target.setConsitution(change);
+		else if(stat.equals("magicalStrength")) target.setMagicalStrength(change);
+		else if(stat.equals("magicalResistance")) target.setMagicalResistance(change);
 		else System.out.println("invalid attribute");
 	}
 	//For the statuses it will simply add the status string to a string arrayList and then at lower levels in conjunction with action listener, block actions or add modifiers
