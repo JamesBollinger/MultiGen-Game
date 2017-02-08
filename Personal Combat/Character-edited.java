@@ -18,9 +18,15 @@ public abstract class Character extends Entity {
 	double k1 = .5; //temporary value
         double k2 = .5; //temporary value
 	ArrayList<String> statuses = new ArrayList<String>();
-	public Character(int x,int y,String img, int h, int s, int ms, int hs, int sp, int l, int ag, int ar,int ac, int cs, int t, int mR){
+	public Character(int x,int y,String img, int h, int s, int ms, int hs, int sp, int l, int ag, int ar,int ac, int cs, int t, int mR, Weapon first, Weapon second){
 		super(x,y,img);
-		health = h; strength = s; speed = sp; agility = ag; armour = ar; accuracy = ac; team = t; luck = l; consitution = cs; magicalStrength = ms; hitSpeed =  hs; magicalResistance = mR;
+		health = h; strength = s; speed = sp; agility = ag; armour = ar; accuracy = ac; team = t; luck = l; consitution = cs; magicalStrength = ms; hitSpeed =  hs; magicalResistance = mR; main = first; secondary = second;
+		if(main.ranged || secondary.ranged){
+			rangedWeapon = true;
+		}
+		if(main.mele || secondary.melee){
+			meleeWeapon = true;	
+		}
 	}
 	//This is the primary method for determining if an attack scores a critical
 	private boolean applyCritical(Character attacker,int critModifier){
