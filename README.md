@@ -15,7 +15,7 @@ Seriously -- should we rename Character.java -> Unit.java ? I could do this, and
 ###Programs Developed so Far (these programs work!)
 *   ActionListenerDemo/GraphicsTest.java -- Produces a grid of random-colored tiles, and clicking transfers a tile's color to a different tile.
 *   ActionListenerDemo/GraphicsLines.java -- Produces a grid of random-colored tiles, and clicking refreshes the coloring.
-*   ./TurnBasedSystem.java (reborn from "TmpGraphics") -- manages moving a unit around the map. (Keeps tack of player phase & enemy phase).
+*   ./TurnBasedSystem.java (reborn from "TmpGraphics") -- manages moving a unit around the map. (Keeps track of player phase & enemy phase).
 
 ###Map Codes
 0 = Ocean  
@@ -27,6 +27,7 @@ Seriously -- should we rename Character.java -> Unit.java ? I could do this, and
 6 = Moutains  
 
 ##Future plans for the mid-level/tactical end (these are still in development)
+*   ./TurnBasedSystemWithHighlightedMenu.java (I will shorten the name later) -- same as TurnBasedSystem, but also includes a menu for the user to click after using a unit
 *   Ensuring that units do not spawn on Ocean tiles (ok, a main mechanism has been added to do this; but I might improve it later)
 *   Develop an AI for the tactical map (again, a basic one exists, but improvements are in progress)
 *   Display a menu for the user to choose certain actions to perform on a particular unit (add a new image overlay. But make sure it's placed in a reasonable location, on screen [not partly off-screen] regardless of the unit location.)
