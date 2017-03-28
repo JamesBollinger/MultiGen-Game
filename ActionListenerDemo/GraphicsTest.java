@@ -46,6 +46,9 @@ class WindowTest extends JPanel implements MouseListener {
 		int s = tileSize*(yInd / tileSize);
 		for (int i = 0; i < tileSize; i ++) {
 			for (int j = 0; j < tileSize; j ++) {
+				if ((i == 0) && (j == 0)) {
+					System.out.println("FILLING CELL " + (xInd/tileSize) + ", " + (yInd/tileSize) + " with color #" + color);
+				}
 				gameBoardImage.setRGB(r+i, s+j, color);
 			}
 		}

@@ -29,13 +29,21 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	 * Then all the references will be updated.
 	 * 
 	 * */
+	private final int GRANDWIDTH = 800;
 	private final int WIDTH = 640;
 	private final int HEIGHT = 640;
 
 	/* number of pixels spanning the HEIGHT of each tile */
 	private final int TILE_SIZE  = 80;
+	private final int MENU_TILE_WIDTH = 160;
+	private final int MENU_TILE_HEIGHT = 23;
 
 	/* number of map choices possible */
+	/* in practice, this should be passed to this class as a 
+	 * parameter to the Constructor
+	 * (right? Or at least, it will be set based on the biome in
+	 *  which the battle occurs).
+	 */
 	private final int MAP_CHOICES = 4;
 
 	private final int NUM_HALT_OPTIONS = 8;
@@ -50,7 +58,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	private BufferedImage[] terrainImage;
 	private Image[] terrainDefs;
 	private int[][] terrainMap;
-	private HaltMenuOption[] menu;
+	private /*HaltMenuOption[]*/ArrayList<HaltMenuOption> menu;
 	private BufferedImage unitsImage;
 	private Character highlighted;
 	private int currentTeam;
@@ -417,16 +425,10 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 
 	public void drawMenu(Graphics renderer) {
 		Graphics2D rend2d = (Graphics2D) renderer;
-		int numHaltOptions = 8;
-		int yPos = (int) (menuPoint.getY());
-		int xPos = (int) (menuPoint.getX());
+		int numHaltOptions = menu.size();
 
 		for (int optionInd = 0; optionInd < numHaltOptions; optionInd ++) {
-			if (menu[optionInd] == null) {
-				System.out.println("ERRRRRRRRRRRRRRR");
-			} else {
-				menu[optionInd].draw(rend2d);
-			}
+			menu.get(optionInd).draw(rend2d);
 		}
 		showMenu = false;
 /*
@@ -517,14 +519,92 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		}
 	}
 
+	private boolean canAttack(Character o) {
+		int xVal = o.getX();
+		int yVal = o.getY();
+		if ((xVal > 0) &&
+			(gameBoard[yVal][xVal-1] != null) &&
+			(gameBoard[yVal][xVal-1].getTeam() == 1)) {
+			return true;
+		}
+		if ((xVal < (tilesX-1)) &&
+			(gameBoard[yVal][xVal+1] != null) &&
+			(gameBoard[yVal][xVal+1].getTeam() == 1)) {
+			return true;
+		}
+		if ((yVal > 0) &&
+			(gameBoard[yVal-1][xVal] != null) &&
+			(gameBoard[yVal-1][xVal].getTeam() == 1)) {
+			return true;
+		}
+		if ((yVal < (tilesY-1)) &&
+			(gameBoard[yVal+1][xVal] != null) &&
+			(gameBoard[yVal+1][xVal].getTeam() == 1)) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean canRescue(Character o) {
+		int xVal = o.getX();
+		int yVal = o.getY();
+		if ((xVal > 0) &&
+			(gameBoard[yVal][xVal-1] != null) &&
+			(gameBoard[yVal][xVal-1].getTeam() == 0)) {
+			return true;
+		}
+		if ((xVal < (tilesX-1)) &&
+			(gameBoard[yVal][xVal+1] != null) &&
+			(gameBoard[yVal][xVal+1].getTeam() == 0)) {
+			return true;
+		}
+		if ((yVal > 0) &&
+			(gameBoard[yVal-1][xVal] != null) &&
+			(gameBoard[yVal-1][xVal].getTeam() == 0)) {
+			return true;
+		}
+		if ((yVal < (tilesY-1)) &&
+			(gameBoard[yVal+1][xVal] != null) &&
+			(gameBoard[yVal+1][xVal].getTeam() == 0)) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean canTrade(Character o) {
+		int xVal = o.getX();
+		int yVal = o.getY();
+		if ((xVal > 0) &&
+			(gameBoard[yVal][xVal-1] != null) &&
+			(gameBoard[yVal][xVal-1].getTeam() == 0)) {
+			return true;
+		}
+		if ((xVal < (tilesX-1)) &&
+			(gameBoard[yVal][xVal+1] != null) &&
+			(gameBoard[yVal][xVal+1].getTeam() == 0)) {
+			return true;
+		}
+		if ((yVal > 0) &&
+			(gameBoard[yVal-1][xVal] != null) &&
+			(gameBoard[yVal-1][xVal].getTeam() == 0)) {
+			return true;
+		}
+		if ((yVal < (tilesY-1)) &&
+			(gameBoard[yVal+1][xVal] != null) &&
+			(gameBoard[yVal+1][xVal].getTeam() == 0)) {
+			return true;
+		}
+		return false;
+	}
+
 	/* Renders the "halt menu" in the proper location
 	 * (this is to be called in state 5, when we wait for the user 
 	 * to decide what to do with a unit)
 	 * */
-	private void makeHaltMenu(int x, int y) {
+	private void makeHaltMenu(Character o, int x, int y) {
 		/* Make a 60x80 rectangle, filled with a light blue color */
 /*		terrainImage[2] = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);*/
-		menu = new HaltMenuOption[8];
+		menu = new ArrayList<HaltMenuOption>()/*[8]*/;
 		showMenu = true;
 
 		int xVal = x;
@@ -532,142 +612,79 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		int widthSpace = (WIDTH - xVal);
 		int heightSpace = (yVal);
 
-		String[] optionNames = new String[8];
-		optionNames[0] = "Attack";
-		optionNames[1] = "Item";
-		optionNames[2] = "Trade";
-		optionNames[3] = "Rescue";
-		optionNames[4] = "Drop";
-		optionNames[5] = "Pass";
-		optionNames[6] = "Ability";
-		optionNames[7] = "Wait";
-
-		if ((widthSpace < 120) && (heightSpace < 160)) {
-			int yBound = (yVal + 160);
-			int xBound = xVal;
-
-			int ind = 0;
-			menuPoint = new Point(xBound-120, yVal);
-			for (int row = yVal; row < yBound; row += 20) {
-				HaltMenuOption nextRe = new HaltMenuOption(menuPoint, row, xVal+5, optionNames[ind], this);
-				menu[ind] = nextRe;
-				ind ++;
-			}
-
-			/*
-			for (int i = yVal; i < yBound; i ++) {
-				for (int j = (xBound-120); j < xBound; j ++) {
-					terrainImage[2].setRGB(j, i, -1658327104);
-				}
-			}
-			menuPoint = new Point(xBound-120, yVal);
-			*/
-		} else if ((widthSpace < 120) && (heightSpace >= (HEIGHT-160))) {
-			int ind = 0;
-			menuPoint = new Point(xVal-120, yVal-160);
-			for (int row = yVal-160; row < yVal; row += 20) {
-				HaltMenuOption nextRe = new HaltMenuOption(menuPoint, row, xVal+5, optionNames[ind], this);
-				menu[ind] = nextRe;
-				ind ++;
-			}
-/*
-			for (int i = (yVal-160); i < yVal; i ++) {
-				for (int j = (xVal-120); j < xVal; j ++) {
-					terrainImage[2].setRGB(j, i, -1658327104);
-				}
-			}
-			menuPoint = new Point(xVal-120, yVal-160);
-*/
-		} else if ((widthSpace >= (WIDTH-120)) && (heightSpace < 160)) {
-			int yBound = (yVal + 160);
-			int xBound = (xVal + 120);
-
-			int ind = 0;
-			menuPoint = new Point(xVal, yVal);
-			for (int row = yVal; row < yBound; row += 20) {
-				HaltMenuOption nextRe = new HaltMenuOption(menuPoint, row, xVal+5, optionNames[ind], this);
-				menu[ind] = nextRe;
-				ind ++;
-			}
-/*
-			int yBound = (yVal + 160);
-			int xBound = (xVal + 120);
-
-			int ind = 0;
-			menuPoint = new Point(xVal-120, yVal-160);
-			for (int row = xVal-120; row < xVal; row += 8) {
-				HaltMenuOption nextRe = new HaltMenuOption();
-				menu[ind] = nextRe;
-				ind ++;
-			}
-*/
-/*
-			for (int i = yVal; i < yBound; i ++) {
-				for (int j = xVal; j < xBound; j ++) {
-					terrainImage[2].setRGB(j, i, -1658327104);
-				}
-			}
-			menuPoint = new Point(xVal, yVal);
-*/
-		} else if (heightSpace < 160) {
-			int yBound = (yVal + 160);
-			int xBound = (xVal + 120);
-
-			menuPoint = new Point(xVal, yVal);
-			int ind = 0;
-			for (int row = yVal; row < yBound; row += 20) {
-				HaltMenuOption nextRe = new HaltMenuOption(menuPoint, row, xVal+5, optionNames[ind], this);
-				menu[ind] = nextRe;
-				ind ++;
-			}
-/*
-			for (int i = yVal; i < yBound; i ++) {
-				for (int j = xVal; j < xBound; j ++) {
-					terrainImage[2].setRGB(j, i, -1658327104);
-				}
-			}
-			menuPoint = new Point(xVal, yVal);
-*/
-		} else if (widthSpace < 120) {
-			int yBound = (yVal + 160);
-			int xBound = xVal;
-
-			menuPoint = new Point(xVal-120, yVal);
-			int ind = 0;
-			for (int row = yVal; row < yBound; row += 20) {
-				HaltMenuOption nextRe = new HaltMenuOption(menuPoint, row, xVal+5, optionNames[ind], this);
-				menu[ind] = nextRe;
-				ind ++;
-			}
-/*
-			for (int i = yVal; i < yBound; i ++) {
-				for (int j = (xBound-120); j < xBound; j ++) {
-					terrainImage[2].setRGB(j, i, -1658327104);
-				}
-			}
-			menuPoint = new Point(xBound-120, yVal);
-*/
-		} else {
-			int yBound = yVal;
-			int xBound = (xVal + 120);
-
-			menuPoint = new Point(xVal, yVal-160);
-			int ind = 0;
-			for (int row = yVal-160; row < yBound; row += 20) {
-				HaltMenuOption nextRe = new HaltMenuOption(menuPoint, row, xVal+5, optionNames[ind], this);
-				menu[ind] = nextRe;
-				ind ++;
-			}
-/*
-			for (int i = (yVal-160); i < yBound; i ++) {
-				for (int j = xVal; j < xBound; j ++) {
-					terrainImage[2].setRGB(j, i, -1658327104);
-				}
-			}
-			menuPoint = new Point(xVal, yVal-160);
-*/
+		/* Design pending for the following...
+		 * i.e., we need to determine for sure where
+		 * exactly we determine whether this highlighted unit CAN attack;
+		 * whether it has an item (though this should probably be in Character/Unit class)
+		 * whether it can Trade (determined in this class, but as a mouse click response?)
+		 * whether it can Rescue (^ditto?)
+		 * whether it can Pass
+		 	(what does this mean again?? herp derp);
+		 * whether it can use an Ability
+		 	(probably done in this class, in its own unique private method call);
+		 * whether it can Wait (Haha.
+		 	Oh wait, will there ever be restrictions on this here? I hope not).
+		 * 
+		 * */
+		/* LONG-TERM PLAN:
+		 * We can actually (probably) re-haul this system of if-structures
+		 * by making a new private helper method, called, say
+		 * "encodeSurroundingData".
+		 * This method can use bitwise operations to encode ALL this data 
+		 * into ONE single Number.
+		 * (I suggest this because some of these calls do very similar checks
+		 * -- canTrade() looks at surrounding squares for a friendly unit,
+		 * and so does canRescue() and possibly canPass()...
+		 *
+		 * How does that sound? I'll work more on
+		 * what this function would look like, but it'll take some time.
+		 * Let me know if you think this is a good idea,
+		 * or (alternatively) if you think that we can take care of all
+		 * these map-checks somewhere else,
+		 * maybe in the Character/Unit class, or maybe in the mouseCLicked method, etc.
+		 * */
+		int rowPxl = 1;
+		int colPxl = WIDTH+1;
+		if (canAttack(o)) {
+			Point nextCorner = new Point(colPxl, rowPxl);
+			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Attack", this));
+			rowPxl += (MENU_TILE_HEIGHT+1);
 		}
-
+/*
+		if (o.hasItem()) {
+			Point nextCorner = new Point(colPxl, rowPxl);
+			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Item", this));
+			rowPxl += (MENU_TILE_HEIGHT+1);
+		}
+*/
+		if (canTrade(o)) {
+			Point nextCorner = new Point(colPxl, rowPxl);
+			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Trade", this));
+			rowPxl += (MENU_TILE_HEIGHT+1);
+		}
+		if (canRescue(o)) {
+			Point nextCorner = new Point(colPxl, rowPxl);
+			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Rescue", this));
+			rowPxl += (MENU_TILE_HEIGHT+1);
+		}
+		/* What does passing mean? Is it, putting down a unit, or does 
+		 * it involve an item? */
+/*
+		if (canPass()) {
+			Point nextCorner = new Point(colPxl, rowPxl);
+			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Pass", this));
+			rowPxl += (MENU_TILE_HEIGHT+1);
+		}
+*/
+/*
+		if (canUseAbility(o)) {
+			Point nextCorner = new Point(colPxl, rowPxl);
+			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Ability", this));
+			rowPxl += (MENU_TILE_HEIGHT+1);
+		}
+*/
+		Point nextCorner = new Point(colPxl, rowPxl);
+		menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Wait", this));
 	}
 
 	private boolean allUnitsMoved() {
@@ -877,22 +894,28 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 			}
 		}
 		if (snapShotState == 4) {
-			makeHaltMenu(xClick, yClick);
+			makeHaltMenu(highlighted, xClick, yClick);
 			repaint();
 			setState(5);
 		} else if (snapShotState == 5) {
-			showMenu = false;
-			terrainImage[2] = null;
-			/* Finalize the move */
-			repaint();
-			if (allUnitsMoved()) {
-				currentTeam ++;
-				currentTeam %= 2;
-				moved.clear();
-			} else {
-/*				System.out.println("Not all player units have moved, apparently.");*/
+			if (xClick > WIDTH) {
+				if ((yClick / (MENU_TILE_HEIGHT+1)) >= (menu.size()-1)) {
+					showMenu = false;
+					terrainImage[2] = null;
+					/* Finalize the move */
+					repaint();
+					if (allUnitsMoved()) {
+						currentTeam ++;
+						currentTeam %= 2;
+						moved.clear();
+					} else {
+/*						System.out.println("Not all player units have moved, apparently.");*/
+					}
+					setState(0);
+
+				}
+
 			}
-			setState(0);
 		}
 	}
 
@@ -926,7 +949,7 @@ public class TurnBasedSystemWithHighlightedMenu extends JFrame {
 		TacticalMapWindow allGraphics = new TacticalMapWindow(ally, opponent);
 		add(allGraphics);
 		setTitle("Mid-Level Simulation");
-		setSize(720, 720);
+		setSize(880, 720);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
@@ -941,7 +964,7 @@ public class TurnBasedSystemWithHighlightedMenu extends JFrame {
 		sideTwo.add(new Soldier(4,3,1));
 		sideTwo.add(new Soldier(5,3,1));
 
-		GraphicsThread intermediary = new GraphicsThread(sideOne, sideTwo);
+		GraphicsThreadWithMenu intermediary = new GraphicsThreadWithMenu(sideOne, sideTwo);
 		EventQueue.invokeLater(intermediary);
 
 /*

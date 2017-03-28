@@ -836,3 +836,4 @@ public class TurnBasedSystem extends JFrame {
 */
 	}
 }
+
