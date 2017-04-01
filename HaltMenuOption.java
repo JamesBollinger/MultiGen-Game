@@ -44,4 +44,8 @@ public class HaltMenuOption extends JComponent {
 				      ((int) (upperLeftCorner.getY())+15));
 	}
 
+	public String getText() {
+		return text;
+	}
+
 }

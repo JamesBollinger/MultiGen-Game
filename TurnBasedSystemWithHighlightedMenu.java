@@ -571,7 +571,59 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		return false;
 	}
 
+	private boolean canDrop(Character o) {
+		int xVal = o.getX();
+		int yVal = o.getY();
+		if ((xVal > 0) &&
+			(gameBoard[yVal][xVal-1] == null) &&
+			(terrainMap[yVal][xVal-1] != 0)) {
+			return true;
+		}
+		if ((xVal < (tilesX-1)) &&
+			(gameBoard[yVal][xVal+1] == null) &&
+			(terrainMap[yVal][xVal+1] != 0)) {
+			return true;
+		}
+		if ((yVal > 0) &&
+			(gameBoard[yVal-1][xVal] == null) &&
+			(terrainMap[yVal-1][xVal] != 0)) {
+			return true;
+		}
+		if ((yVal < (tilesY-1)) &&
+			(gameBoard[yVal+1][xVal] == null) &&
+			(terrainMap[yVal+1][xVal] != 0)) {
+			return true;
+		}
+		return false;
+	}
+
 	private boolean canTrade(Character o) {
+		int xVal = o.getX();
+		int yVal = o.getY();
+		if ((xVal > 0) &&
+			(gameBoard[yVal][xVal-1] != null) &&
+			(gameBoard[yVal][xVal-1].getTeam() == 0)) {
+			return true;
+		}
+		if ((xVal < (tilesX-1)) &&
+			(gameBoard[yVal][xVal+1] != null) &&
+			(gameBoard[yVal][xVal+1].getTeam() == 0)) {
+			return true;
+		}
+		if ((yVal > 0) &&
+			(gameBoard[yVal-1][xVal] != null) &&
+			(gameBoard[yVal-1][xVal].getTeam() == 0)) {
+			return true;
+		}
+		if ((yVal < (tilesY-1)) &&
+			(gameBoard[yVal+1][xVal] != null) &&
+			(gameBoard[yVal+1][xVal].getTeam() == 0)) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean canPass(Character o) {
 		int xVal = o.getX();
 		int yVal = o.getY();
 		if ((xVal > 0) &&
@@ -650,13 +702,11 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Attack", this));
 			rowPxl += (MENU_TILE_HEIGHT+1);
 		}
-/*
 		if (o.hasItem()) {
 			Point nextCorner = new Point(colPxl, rowPxl);
 			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Item", this));
 			rowPxl += (MENU_TILE_HEIGHT+1);
 		}
-*/
 		if (canTrade(o)) {
 			Point nextCorner = new Point(colPxl, rowPxl);
 			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Trade", this));
@@ -667,15 +717,16 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Rescue", this));
 			rowPxl += (MENU_TILE_HEIGHT+1);
 		}
-		/* What does passing mean? Is it, putting down a unit, or does 
-		 * it involve an item? */
-/*
-		if (canPass()) {
+		if (canDrop(o)) {
+			Point nextCorner = new Point(colPxl, rowPxl);
+			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Drop", this));
+			rowPxl += (MENU_TILE_HEIGHT+1);
+		}
+		if (canPass(o)) {
 			Point nextCorner = new Point(colPxl, rowPxl);
 			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Pass", this));
 			rowPxl += (MENU_TILE_HEIGHT+1);
 		}
-*/
 /*
 		if (canUseAbility(o)) {
 			Point nextCorner = new Point(colPxl, rowPxl);
@@ -899,7 +950,8 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 			setState(5);
 		} else if (snapShotState == 5) {
 			if (xClick > WIDTH) {
-				if ((yClick / (MENU_TILE_HEIGHT+1)) >= (menu.size()-1)) {
+				int menuNum = (yClick / (MENU_TILE_HEIGHT+1));
+				if (menuNum >= (menu.size()-1)) {
 					showMenu = false;
 					terrainImage[2] = null;
 					/* Finalize the move */
@@ -909,13 +961,62 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 						currentTeam %= 2;
 						moved.clear();
 					} else {
-/*						System.out.println("Not all player units have moved, apparently.");*/
+/*
+						System.out.println("Not all player units have moved, apparently.");
+*/
 					}
 					setState(0);
 
+				} else {
+					/* need to respond to the specific option
+					 * pressed */
+					//
+					String choice = menu.get(menuNum).getText();
+					if (choice.equals("Attack")) {
+						setState(6);
+					} else if (choice.equals("Item")) {
+						
+					} else if (choice.equals("Trade")) {
+						
+					} else if (choice.equals("Rescue")) {
+						
+					} else if (choice.equals("Drop")) {
+						
+					} else if (choice.equals("Pass")) {
+						
+					} else if (choice.equals("Ability")) {
+						
+					} else {
+						System.out.println("Cannot identify the menu choice "+choice+".");
+						throw new UnsupportedOperationException();
+					}
 				}
 
 			}
+		} else if (snapShotState == 6) {
+			if (xClick > WIDTH) {
+				int menuNum = (yClick / (MENU_TILE_HEIGHT+1));
+				if (menuNum >= (menu.size()-1)) {
+					showMenu = false;
+					terrainImage[2] = null;
+					/* Finalize the move */
+					repaint();
+					if (allUnitsMoved()) {
+						currentTeam ++;
+						currentTeam %= 2;
+						moved.clear();
+					} else {
+/*
+						System.out.println("Not all player units have moved, apparently.");
+*/
+					}
+					setState(0);
+					
+				}
+				
+			}
+		} else if (snapShotState == 7) {
+			
 		}
 	}
 

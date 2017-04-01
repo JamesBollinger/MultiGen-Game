@@ -18,6 +18,7 @@ Seriously -- should we rename Character.java -> Unit.java ? I could do this, and
 *   ./TurnBasedSystem.java (reborn from "TmpGraphics") -- manages moving a unit around the map. (Keeps track of player phase & enemy phase).
 
 ###Map Codes
+
 0 = Ocean  
 1 = Plains  
 2 = Forest  
