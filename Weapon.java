@@ -4,9 +4,16 @@
  * is where the target actually gets assigned damage to take
  */
 public abstract class Weapon{
-	int minDamage, maxDamage, armourPiercing;
+	int minDamage, maxDamage, armourPiercing, range;
 	public Weapon(int mI,int mD, int aR){
 	 	minDamage = mI; maxDamage = mD; armourPiercing = aR;
+		// Make 1 the default range?
+		range = 1;
+	}
+
+	public Weapon(int mI,int mD, int aR, int givenRange){
+	 	minDamage = mI; maxDamage = mD; armourPiercing = aR;
+		range = givenRange;
 	}
 	public abstract void attack(Character attacker, Character target);
 
@@ -17,5 +24,9 @@ public abstract class Weapon{
 		int amourDifference = armourPiercing - target.armour;
 		if(amourDifference > 0) amourDifference = 0;
 		target.dealDamage(((int)(Math.random()*(maxDamage-minDamage)) + minDamage - amourDifference));
+	}
+
+	public int getRange() {
+		return range;
 	}
 }

@@ -11,12 +11,14 @@ import java.util.LinkedList;
 public abstract class Character extends Entity {
 	int health, strength, speed, dodge, armour, accuracy, initiative;
 	private LinkedList<Item> inventory;
+	private Weapon[] weapons;
 	int team; //0 for friendly, 1 for enemy, -1 for no team
 	boolean up = true;
 	public Character(int x,int y,String img, int h, int s, int sp, int d, int ar,int ac, int i, int t){
 		super(x,y,img);
 		health = h; strength = s; speed = sp; dodge = d; armour = ar;accuracy = ac; initiative = i; team = t;
 		inventory = new LinkedList<Item>();
+		weapons = new Weapon[Entity.MAX_NUM_WEAPONS];
 	}
 	public void move(int x,int y){this.x = x;this.y = y;}
 	public abstract void attack(Character target);
@@ -68,6 +70,10 @@ public abstract class Character extends Entity {
 	}
 	public void addItem(Item ele) {
 		inventory.addLast(ele);
+	}
+
+	public Weapon[] getWeapons() {
+		return weapons;
 	}
 
 }

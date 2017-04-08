@@ -9,6 +9,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 public abstract class Entity {
+	public static final int MAX_NUM_WEAPONS = 4;
 	//This are the primary instances that everything uses
 	ImageIcon sprite;int x;int y;
 	public Entity(int r, int j, String img) {

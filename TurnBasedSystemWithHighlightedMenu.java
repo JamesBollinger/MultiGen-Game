@@ -1,13 +1,14 @@
 /*
  * Vincent Cozzo
  * A basic "game board" design,
- * originally inspired by the tutorial by Jan Bodnar fround at:
+ * class design was originally inspired by the tutorial by Jan Bodnar fround at:
  * http://zetcode.com/gfx/java2d/basicdrawing/
  * 
  * 
  */
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -60,10 +61,16 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	private int[][] terrainMap;
 	private /*HaltMenuOption[]*/ArrayList<HaltMenuOption> menu;
 	private BufferedImage unitsImage;
+
+	private ArrayList<Character> inRange;
 	private Character highlighted;
 	private int currentTeam;
 	private int numMoved;
+	private HashMap<Character, ArrayList<Weapon>> validWeaponsPerUnit;
+
+	/* For storing the tactical game state (a changing int value) */
 	private int state;
+	/* For storing the tactical game map (a constant generated once) */
 	private int mapFileChoice;
 
 	//Every single object in the game, is made up of the enemies and friendlies arrayLists declared below
@@ -94,6 +101,9 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		numLayers = 3;
 		currentTeam = 0; // start the game in Player Phase
 		numMoved = 0;
+		inRange = new ArrayList<Character>();
+		validWeaponsPerUnit = new HashMap<Character, ArrayList<Weapon>>();
+
 		terrainImage = new BufferedImage[3];
 		terrainMap = new int[tilesY][tilesX];
 /*		terrainImage[0] = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);*/
@@ -519,30 +529,146 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		}
 	}
 
+	/***
+	 * A recursive method to identify all enemy units in range
+	 * and determine which, if any, weapons can reach the enemy from the player unit's 
+	 * current position.
+	 * */
+	private void getEnemiesInRange(int range, int xCoord, int yCoord, Weapon[] weapons, int xSrc, int ySrc) {
+		if ((xCoord >= 0) && (xCoord < tilesX) &&
+		    (yCoord >= 0) && (yCoord < tilesY)) {
+			Character nextUnit = gameBoard[yCoord][xCoord];
+			if (range == 0) {
+/*				if (terrainMap[yCoord][xCoord] == 0) {
+				} else*/
+				if (nextUnit == null) {
+					/* no-op... */
+				} else if (nextUnit.getTeam() == 1) {
+					colorSquare(1, xCoord*TILE_SIZE, yCoord*TILE_SIZE, -1387614848);
+					inRange.add(nextUnit);
+					ArrayList<Weapon> validWeapons = new ArrayList<Weapon>();
+					for (int ind=0; ind < weapons.length; ind ++) {
+						int delta = (int)Math.abs((double)(xCoord-xSrc))+Math.abs(yCoord-ySrc);
+						if (delta <= weapons[ind].getRange()) {
+							validWeapons.add(weapons[ind]);
+						}
+					}
+					validWeaponsPerUnit.put(nextUnit, validWeapons);
+				}
+			} else {
+/*				if (terrainMap[yCoord][xCoord] == 0) {
+					// No-op
+				} else*/
+				if (nextUnit == null) {
+					getEnemiesInRange(range-1, xCoord-1, yCoord, weapons, xSrc, ySrc);
+					getEnemiesInRange(range-1, xCoord+1, yCoord, weapons, xSrc, ySrc);
+					getEnemiesInRange(range-1, xCoord, yCoord-1, weapons, xSrc, ySrc);
+					getEnemiesInRange(range-1, xCoord, yCoord+1, weapons, xSrc, ySrc);
+				} else if (nextUnit.getTeam() == 1) {
+					colorSquare(1, xCoord*TILE_SIZE, yCoord*TILE_SIZE, -1387614848);
+					inRange.add(nextUnit);
+					ArrayList<Weapon> validWeapons = new ArrayList<Weapon>();
+					for (int ind=0; ind < weapons.length; ind ++) {
+						int delta = (int)Math.abs((double)(xCoord-xSrc))+Math.abs(yCoord-ySrc);
+						if (delta <= weapons[ind].getRange()) {
+							validWeapons.add(weapons[ind]);
+						}
+					}
+					validWeaponsPerUnit.put(nextUnit, validWeapons);
+					getEnemiesInRange(range-1, xCoord-1, yCoord, weapons, xSrc, ySrc);
+					getEnemiesInRange(range-1, xCoord+1, yCoord, weapons, xSrc, ySrc);
+					getEnemiesInRange(range-1, xCoord, yCoord-1, weapons, xSrc, ySrc);
+					getEnemiesInRange(range-1, xCoord, yCoord+1, weapons, xSrc, ySrc);
+				}
+			}
+		}
+	}
+
+	/***
+	 * A recursive method to color the area of tiles
+	 * that have targetable enemy units on them.
+	 * */
+	private void getEnemiesInRangeOneWeapon(int range, int xCoord, int yCoord, Weapon onlyWeapon, int xSrc, int ySrc) {
+		if ((xCoord >= 0) && (xCoord < tilesX) &&
+		    (yCoord >= 0) && (yCoord < tilesY)) {
+			Character nextUnit = gameBoard[yCoord][xCoord];
+			if (range == 0) {
+/*				if (terrainMap[yCoord][xCoord] == 0) {
+				} else*/
+				if (nextUnit == null) {
+					/* no-op... */
+				} else if (nextUnit.getTeam() == 1) {
+					colorSquare(1, xCoord*TILE_SIZE, yCoord*TILE_SIZE, -1387614848);
+					inRange.add(nextUnit);
+					ArrayList<Weapon> validWeapons = new ArrayList<Weapon>();
+					int delta = (int)Math.abs((double)(xCoord-xSrc))+Math.abs(yCoord-ySrc);
+					if (delta <= onlyWeapon.getRange()) {
+						validWeapons.add(onlyWeapon);
+					}
+					validWeaponsPerUnit.put(nextUnit, validWeapons);
+				}
+			} else {
+/*				if (terrainMap[yCoord][xCoord] == 0) {
+					// No-op
+				} else*/
+				if (nextUnit == null) {
+					getEnemiesInRangeOneWeapon(range-1, xCoord-1, yCoord, onlyWeapon, xSrc, ySrc);
+					getEnemiesInRangeOneWeapon(range-1, xCoord+1, yCoord, onlyWeapon, xSrc, ySrc);
+					getEnemiesInRangeOneWeapon(range-1, xCoord, yCoord-1, onlyWeapon, xSrc, ySrc);
+					getEnemiesInRangeOneWeapon(range-1, xCoord, yCoord+1, onlyWeapon, xSrc, ySrc);
+				} else if (nextUnit.getTeam() == 1) {
+					colorSquare(1, xCoord*TILE_SIZE, yCoord*TILE_SIZE, -1387614848);
+					inRange.add(nextUnit);
+					ArrayList<Weapon> validWeapons = new ArrayList<Weapon>();
+					int delta = (int)Math.abs((double)(xCoord-xSrc))+Math.abs(yCoord-ySrc);
+					if (delta <= onlyWeapon.getRange()) {
+						validWeapons.add(onlyWeapon);
+					}
+					validWeaponsPerUnit.put(nextUnit, validWeapons);
+					getEnemiesInRangeOneWeapon(range-1, xCoord-1, yCoord, onlyWeapon, xSrc, ySrc);
+					getEnemiesInRangeOneWeapon(range-1, xCoord+1, yCoord, onlyWeapon, xSrc, ySrc);
+					getEnemiesInRangeOneWeapon(range-1, xCoord, yCoord-1, onlyWeapon, xSrc, ySrc);
+					getEnemiesInRangeOneWeapon(range-1, xCoord, yCoord+1, onlyWeapon, xSrc, ySrc);
+				}
+			}
+		}
+	}
+
+	/* A method to check whether the selected Player unit 
+	 * can attack from its current position...
+	 * Precondition: o represents a non-null player Unit
+	 * Postcondition: 
+	 *   Updates the list of Units that are within attack range
+	 *   and then returns a boolean representing whether that
+	 *   list is non-empty.
+	*/
 	private boolean canAttack(Character o) {
 		int xVal = o.getX();
 		int yVal = o.getY();
-		if ((xVal > 0) &&
-			(gameBoard[yVal][xVal-1] != null) &&
-			(gameBoard[yVal][xVal-1].getTeam() == 1)) {
-			return true;
+		int initRange = Integer.MIN_VALUE;
+		int numWeapons = 0;
+		Weapon[] allWeaponChoices = o.getWeapons();
+		for (int choice = 0; choice < allWeaponChoices.length; choice ++) {
+			Weapon nextWeap = allWeaponChoices[choice];
+			if (nextWeap != null) {
+				numWeapons ++;
+				int nextWeapRange = nextWeap.getRange();
+				if (nextWeapRange > initRange) {
+					initRange = nextWeapRange;
+				}
+			}
 		}
-		if ((xVal < (tilesX-1)) &&
-			(gameBoard[yVal][xVal+1] != null) &&
-			(gameBoard[yVal][xVal+1].getTeam() == 1)) {
-			return true;
+		inRange.clear();
+		validWeaponsPerUnit.clear();
+		if (numWeapons < 1) {
+			return false;
+		} else if (numWeapons > 1) { // oh boy. have to process all these possible weapons.
+			/*inRange = */getEnemiesInRange(initRange, xVal, yVal, allWeaponChoices, o.getX(), o.getY());
+			return (inRange.size() > 0);
+		} else { // only one weapon! yay
+			/*inRange = */getEnemiesInRangeOneWeapon(initRange, xVal, yVal, allWeaponChoices[0], o.getX(), o.getY());
+			return (inRange.size() > 0);
 		}
-		if ((yVal > 0) &&
-			(gameBoard[yVal-1][xVal] != null) &&
-			(gameBoard[yVal-1][xVal].getTeam() == 1)) {
-			return true;
-		}
-		if ((yVal < (tilesY-1)) &&
-			(gameBoard[yVal+1][xVal] != null) &&
-			(gameBoard[yVal+1][xVal].getTeam() == 1)) {
-			return true;
-		}
-		return false;
 	}
 
 	private boolean canRescue(Character o) {
@@ -682,6 +808,8 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		 * We can actually (probably) re-haul this system of if-structures
 		 * by making a new private helper method, called, say
 		 * "encodeSurroundingData".
+		 * (It can even be threaded, maybe? To make these computations parallelized...
+		 *  I might be able to apply what I'm learning in class.)
 		 * This method can use bitwise operations to encode ALL this data 
 		 * into ONE single Number.
 		 * (I suggest this because some of these calls do very similar checks
@@ -693,7 +821,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		 * Let me know if you think this is a good idea,
 		 * or (alternatively) if you think that we can take care of all
 		 * these map-checks somewhere else,
-		 * maybe in the Character/Unit class, or maybe in the mouseCLicked method, etc.
+		 * maybe in the Character/Unit class, or maybe in the mouseClicked method, etc.
 		 * */
 		int rowPxl = 1;
 		int colPxl = WIDTH+1;
@@ -787,6 +915,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		if (showMenu) {
 			drawMenu(gm);
 		}
+		inRange.clear();
 /*		System.out.println("\tabout to finish drawing :P");*/
 	}
 
@@ -965,6 +1094,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 						System.out.println("Not all player units have moved, apparently.");
 */
 					}
+					repaint();
 					setState(0);
 
 				} else {
@@ -973,19 +1103,32 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 					//
 					String choice = menu.get(menuNum).getText();
 					if (choice.equals("Attack")) {
+						repaint();
 						setState(6);
 					} else if (choice.equals("Item")) {
-						
+						/* IN DEVELOPMENT */
+						repaint();
+						setState(0);
 					} else if (choice.equals("Trade")) {
-						
+						/* IN DEVELOPMENT */
+						repaint();
+						setState(0);
 					} else if (choice.equals("Rescue")) {
-						
+						/* IN DEVELOPMENT */
+						repaint();
+						setState(0);
 					} else if (choice.equals("Drop")) {
-						
+						/* IN DEVELOPMENT */
+						repaint();
+						setState(0);
 					} else if (choice.equals("Pass")) {
-						
+						/* IN DEVELOPMENT */
+						repaint();
+						setState(0);
 					} else if (choice.equals("Ability")) {
-						
+						/* IN DEVELOPMENT */
+						repaint();
+						setState(0);
 					} else {
 						System.out.println("Cannot identify the menu choice "+choice+".");
 						throw new UnsupportedOperationException();
@@ -993,7 +1136,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 				}
 
 			}
-		} else if (snapShotState == 6) {
+		} else if (snapShotState == 6) { /* "Attack" option seelcted */
 			if (xClick > WIDTH) {
 				int menuNum = (yClick / (MENU_TILE_HEIGHT+1));
 				if (menuNum >= (menu.size()-1)) {
