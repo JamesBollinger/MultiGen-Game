@@ -17,7 +17,7 @@ public class Bow extends Weapon {
 		}
 		return false;
 	}
-	public Bow(int a, int d, Arrow arrow) {
+	public Bow(int a, int d, Arrow arrow, int givenRange) {
 		/* 
 		 * This "a" parameter used to be "mA"
 		 * ('modified attack' or perhaps 'modified accuracy'?)
@@ -25,7 +25,7 @@ public class Bow extends Weapon {
 		 *  to modify the value of "a", before using it?)
 		 *  -VC
 		 * */
-		super(d,a,arrow.armourPiercing);
+		super(d,a,arrow.armourPiercing,givenRange);
 		arrows = new Arrow(arrow.armourPiercing, arrow.quiver);
 		accuracy = a;
 	}

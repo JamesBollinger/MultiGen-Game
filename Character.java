@@ -1,4 +1,6 @@
 import java.util.LinkedList;
+import java.util.Iterator;
+import java.util.Collection;
 /*
  * This is the main class that every entity currently is descended from
  * It contains the majority of methods that generally everyone would have to do(take damage, move, and not be down)
@@ -10,8 +12,8 @@ import java.util.LinkedList;
 */
 public abstract class Character extends Entity {
 	int health, strength, speed, dodge, armour, accuracy, initiative;
-	private LinkedList<Item> inventory;
-	private Weapon[] weapons;
+	protected LinkedList<Item> inventory;
+	protected Weapon[] weapons;
 	int team; //0 for friendly, 1 for enemy, -1 for no team
 	boolean up = true;
 	public Character(int x,int y,String img, int h, int s, int sp, int d, int ar,int ac, int i, int t){
@@ -20,6 +22,29 @@ public abstract class Character extends Entity {
 		inventory = new LinkedList<Item>();
 		weapons = new Weapon[Entity.MAX_NUM_WEAPONS];
 	}
+
+	public Character(int x,int y,String img, int h, int s, int sp, int d, int ar,int ac, int i, int t, Weapon primaryWeapon){
+		super(x,y,img);
+		health = h; strength = s; speed = sp; dodge = d; armour = ar;accuracy = ac; initiative = i; team = t;
+		inventory = new LinkedList<Item>();
+		weapons = new Weapon[Entity.MAX_NUM_WEAPONS];
+		weapons[0] = primaryWeapon;
+	}
+
+	public Character(int x,int y,String img, int h, int s, int sp, int d, int ar,int ac, int i, int t, Collection<Weapon> initWeapons){
+		super(x,y,img);
+		health = h; strength = s; speed = sp; dodge = d; armour = ar;accuracy = ac; initiative = i; team = t;
+		inventory = new LinkedList<Item>();
+		weapons = new Weapon[Entity.MAX_NUM_WEAPONS];
+		Iterator<Weapon> weaponIter = initWeapons.iterator();
+		int ind=0;
+		while ((ind < weapons.length)
+				&& (weaponIter.hasNext())) {
+			weapons[ind] = weaponIter.next();
+			ind++;
+		}
+	}
+
 	public void move(int x,int y){this.x = x;this.y = y;}
 	public abstract void attack(Character target);
 	public void dealDamage(int d){
@@ -76,4 +101,40 @@ public abstract class Character extends Entity {
 		return weapons;
 	}
 
+	/* Precondition: fedWeapon is a fully constructed non-null Weapon object
+	 * Postcondition: adds fedWeapon to this character's list of objects in possession
+	 * If sudo is true and this character already owns a complete set of weapons,
+	 *  then one weapon will be automatically, siently replaced.
+	 * TODO: give the client an option of replacing an item of his/her choice
+	 * (perhaps send another parameter to this function specifying what location
+	 * should be replaced ?)
+	 * returns true if the operation was successful, false if the weapon set 
+	 * is already at max capacity.
+	*/
+	public boolean setWeapon(Weapon fedWeapon, boolean sudo) {
+		int ind=0;
+		while ((ind < weapons.length)
+			&& (weapons[ind] != null)) {
+			ind ++;
+		}
+		if (ind < weapons.length) {
+			weapons[ind] = fedWeapon;
+			return true;
+		} else if (sudo) {
+			weapons[0] = fedWeapon;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public void setWeapons(Collection<Weapon> weaponFeed) {
+		Iterator<Weapon> weaponIter = weaponFeed.iterator();
+		int ind=0;
+		while ((ind < weapons.length)
+				&& (weaponIter.hasNext())) {
+			weapons[ind] = weaponIter.next();
+			ind++;
+		}
+	}
 }
