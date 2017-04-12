@@ -8,12 +8,14 @@ public class Archer extends Character {
 		range = 10;
 		bow = new Bow(10,5,/*3,*/new Arrow(2,3), 3);
 		weapons[0] = bow;
+		name = ("Archer"+name.substring(4));
 	}
 	public Archer(int x, int y, int t, int ran){
 		super(x,y,"\"artwork\"/Archer.png",10,5,6,0,0,10,(int)(Math.random()*10), t);
 		range = 10;
 		bow = new Bow(10,5,/*3,*/new Arrow(2,3), ran);
 		weapons[0] = bow;
+		name = ("Archer"+name.substring(4));
 	}
 	//Used primarly for inconsole testing
 	public String toString(){

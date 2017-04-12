@@ -32,6 +32,6 @@ Seriously -- should we rename Character.java -> Unit.java ? I could do this, and
 *   Ensuring that units do not spawn on Ocean tiles (ok, a main mechanism has been added to do this; but I might improve it later)
 *   Develop an AI for the tactical map (again, a basic one exists, but improvements are in progress)
 *   Display a menu for the user to choose certain actions to perform on a particular unit (add a new image overlay. But make sure it's placed in a reasonable location, on screen [not partly off-screen] regardless of the unit location.)
-*     Allowing the client/user to click a terrain square to get more info about that square/tile (TBD)
+*   Allowing the client/user to click a terrain square to get more info about that square/tile (TBD)
 
 

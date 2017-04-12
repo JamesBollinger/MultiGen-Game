@@ -11,6 +11,7 @@ import java.util.Collection;
  * accuracy(used in ranged attack calculations), and initiative(used to determine when this character is allowed to move)
 */
 public abstract class Character extends Entity {
+	protected String name;
 	int health, strength, speed, dodge, armour, accuracy, initiative;
 	protected LinkedList<Item> inventory;
 	protected Weapon[] weapons;
@@ -21,6 +22,7 @@ public abstract class Character extends Entity {
 		health = h; strength = s; speed = sp; dodge = d; armour = ar;accuracy = ac; initiative = i; team = t;
 		inventory = new LinkedList<Item>();
 		weapons = new Weapon[Entity.MAX_NUM_WEAPONS];
+		name = new String("Unit(Team "+t+"):HP "+h+";SPD "+sp+";ACC "+ac);
 	}
 
 	public Character(int x,int y,String img, int h, int s, int sp, int d, int ar,int ac, int i, int t, Weapon primaryWeapon){
@@ -28,6 +30,7 @@ public abstract class Character extends Entity {
 		health = h; strength = s; speed = sp; dodge = d; armour = ar;accuracy = ac; initiative = i; team = t;
 		inventory = new LinkedList<Item>();
 		weapons = new Weapon[Entity.MAX_NUM_WEAPONS];
+		name = new String("Unit(Team "+t+"):HP "+h+";SPD "+sp+";ACC "+ac);
 		weapons[0] = primaryWeapon;
 	}
 
@@ -36,6 +39,7 @@ public abstract class Character extends Entity {
 		health = h; strength = s; speed = sp; dodge = d; armour = ar;accuracy = ac; initiative = i; team = t;
 		inventory = new LinkedList<Item>();
 		weapons = new Weapon[Entity.MAX_NUM_WEAPONS];
+		name = new String("Unit(Team "+t+"):HP "+h+";SPD "+sp+";ACC "+ac);
 		Iterator<Weapon> weaponIter = initWeapons.iterator();
 		int ind=0;
 		while ((ind < weapons.length)
@@ -136,5 +140,13 @@ public abstract class Character extends Entity {
 			weapons[ind] = weaponIter.next();
 			ind++;
 		}
+	}
+
+	public String toString() {
+		return name;
+	}
+
+	public String name() {
+		return name;
 	}
 }

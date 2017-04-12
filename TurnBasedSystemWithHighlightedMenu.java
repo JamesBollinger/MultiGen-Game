@@ -8,6 +8,7 @@
  */
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -37,7 +38,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 
 	/* number of pixels spanning the HEIGHT of each tile */
 	private final int TILE_SIZE  = 80;
-	private final int MENU_TILE_WIDTH = 160;
+	private final int MENU_TILE_WIDTH = 230;
 	private final int MENU_TILE_HEIGHT = 23;
 
 	/* number of map choices possible */
@@ -859,12 +860,12 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		int rowPxl = 1;
 		int colPxl = WIDTH+1;
 		if (canAttack(o)) {
-			System.out.println("UNIT CAN ATTACK");
+//			System.out.println("UNIT CAN ATTACK");
 			Point nextCorner = new Point(colPxl, rowPxl);
 			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Attack", this));
 			rowPxl += (MENU_TILE_HEIGHT+1);
 		} else {
-			System.out.println("UNIT CANNOT ATTACK");
+//			System.out.println("UNIT CANNOT ATTACK");
 		}
 		if (o.hasItem()) {
 			Point nextCorner = new Point(colPxl, rowPxl);
@@ -1055,6 +1056,10 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 */
 		int snapShotState = getState();
 		if (snapShotState == 0) {
+			if ((xInd >= tilesX) ||
+				(yInd >= tilesY)) {
+				return;
+			}
 			if (gameBoard[yInd][xInd] != null) {
 				highlighted = gameBoard[yInd][xInd];
 			}
@@ -1139,8 +1144,25 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 					/* need to respond to the specific option
 					 * pressed */
 					//
+					showMenu = true;
 					String choice = menu.get(menuNum).getText();
 					if (choice.equals("Attack")) {
+						// We wish to display a new menu,
+						// but not using the same makeMenu() method as before...
+						// this is a simpler custom menu, so: create it right here
+						menu.clear();
+						int colPxl = (WIDTH+1);
+						int rowPxl = 1;
+						Iterator<Character> inRangeIter = inRange.iterator();
+						while (inRangeIter.hasNext()) {
+							Character nextEne = inRangeIter.next();
+							Point nextCorner = new Point(colPxl, rowPxl);
+							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.name(), this));
+							rowPxl += (MENU_TILE_HEIGHT+1);
+						}
+						Point nextCorner = new Point(colPxl, rowPxl);
+						menu.add(new HaltMenuOption(nextCorner,
+							MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Skip", this));
 						repaint();
 						setState(6);
 					} else if (choice.equals("Item")) {
@@ -1181,6 +1203,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 					showMenu = false;
 					terrainImage[2] = null;
 					/* Finalize the move */
+					/* TODO generate the LIST of */
 					repaint();
 					if (allUnitsMoved()) {
 						currentTeam ++;
@@ -1199,6 +1222,12 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		} else if (snapShotState == 7) {
 			System.out.println("IN DEVELOPMENT");
 			System.out.println("Eventually the client will be able to choose an enemy to attack etc...");
+			
+//	    		showMenu = false;
+			repaint();
+			setState(8);
+		} else if (snapShotState == 8) {
+			repaint();
 			setState(0);
 		}
 	}

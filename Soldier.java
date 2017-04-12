@@ -12,6 +12,7 @@ public class Soldier extends Character {
 */
 		super(x, y, new String ("\"artwork\"/nic-cage-" + ((int)(Math.random()*5)) + ".jpg"), 10, 5, 6, 4, 3, 1, ((int)(Math.random()*10)), t);
 		sword = new Sword(4,8,7);	
+		name = "Soldier"+name.substring(4);
 	}
 	public String toString(){
 		return "S";
