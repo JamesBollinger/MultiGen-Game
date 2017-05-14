@@ -15,16 +15,18 @@ public abstract class Weapon{
 	 	minDamage = mI; maxDamage = mD; armourPiercing = aR;
 		range = givenRange;
 	}
-	public abstract void attack(Character attacker, Character target);
+	public abstract void attack(Unit attacker, Unit target);
 
 	//This takes into account the targets armor, the armor piercing of the attack and the damage of the weapon
 	//if the armor piercing is greater than the armor, it is set to the difference is automatically set to zero
 	//it then deals a random amount of damage between the min and max damage range, with the armor difference subtracted from that
-	public void dealDamage(Character target){
+	/*
+	public void dealDamage(Unit target){
 		int amourDifference = armourPiercing - target.armour;
 		if(amourDifference > 0) amourDifference = 0;
 		target.dealDamage(((int)(Math.random()*(maxDamage-minDamage)) + minDamage - amourDifference));
 	}
+	*/
 
 	public int getRange() {
 		return range;
