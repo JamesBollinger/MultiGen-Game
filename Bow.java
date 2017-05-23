@@ -31,14 +31,27 @@ public class Bow extends Weapon {
 	}
 	//This is the actual attack method
 	//comes from weapon
-	public void attack(Character attacker, Character target){
+	public void attack(Unit attacker, Unit target){
 		arrows.shoot();
 		if(accuracyTest(((Archer)attacker).range, target.dodge, attacker.accuracy, 0)){
 			//This method is a weapon method
+            /* In order to be compatible with the dealDamage() in the Weapon class,
+             * this line had to be adjusted... more parameters needed to be added
+             * */
+            /*
 			dealDamage(target);
-			System.out.println("hit");
+			*/
+			int armourDifference = armourPiercing - target.armour;
+			if(armourDifference > 0) armourDifference = 0;
+			target.dealDamage(
+				((int)(Math.random()*(maxDamage-minDamage)) + minDamage - armourDifference),
+				attacker,
+				attacker.getStrength(),
+				maxDamage,
+				0);
+/*			System.out.println("hit");*/
 		}
-		else System.out.println("missed");
+/*		else System.out.println("missed");*/
 		
 			
 	}

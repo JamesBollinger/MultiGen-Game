@@ -119,7 +119,7 @@ public abstract class Unit extends Entity {
 	}
 	
 	private boolean applyCritical(Unit attacker,int critModifier){
-		int luckValue = (int) ((double)(k1*attacker.luck+critModifier-k2*this.luck)/100);
+		int luckValue = (int) ((double)(k1*attacker.getLuck()+critModifier-k2*this.getLuck())/100);
 		return (luckValue > Math.random());
 	}
 	public void dealDamage(int d, Unit attacker, int strength, int attackStrength, int critModifier) {
@@ -148,6 +148,15 @@ public abstract class Unit extends Entity {
 	public int getSpeed(){
 		return speed;
 	}
+    public int getArmour(){
+		return armour;
+    }
+    public int getLuck(){
+		return luck;
+    }
+    public int getStrength(){
+		return strength;
+    }
 	
 	//All of these values should be inputed as either a plus of minus to change it up or down
 	public void setStrength(int change){

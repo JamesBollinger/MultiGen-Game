@@ -6,11 +6,17 @@ So I think that we could use this readMe to easily to set tasks and other stuff 
 I just think it would be an easy way of looking at stuff  
 We should probably still use the google docs for brainstorming new general ideas, leave this for specific code stuff  
 
+### Programming notes / suggestions
 NOTE (Jan 15th, VC): "Character" is the name of an existing wrapper class in Java.  
 This may be *practically* irrelevant, since we're not going to be using the wrapper class.  
 But it got me thinking as to whether we should rename the Character.java class.  
 Seriously -- should we rename Character.java -> Unit.java ? I could do this, and replace all instances of the word, if you want. -VC  
 
+Additional notes:
+
+The Weapon.java class contains the abstract method attack(), but it also contains a method called dealDamage(). Is this a redundant method? This is something to consider.
+
+Also, though this is marginally less important, we should reconsider the placement of println() statements. At the very least, if we include them for debugging / logging purposes, we should (i) have them all in one saved log file, or (ii) make them more descriptive to describe what unit is attacking / has just hit / missed, etc.
 
 ### Programs Developed so Far (these programs work!)
 *   ActionListenerDemo/GraphicsTest.java -- Produces a grid of random-colored tiles, and clicking transfers a tile's color to a different tile.

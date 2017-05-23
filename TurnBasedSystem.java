@@ -38,30 +38,30 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	private boolean regenMap;
 	private boolean showMenu;
 	private Point menuPoint;
-/*	private ArrayList<Character> entities;    */
+/*	private ArrayList<Unit> entities;    */
 /*	private Color storedColor;    */
 	private int numLayers;
 	private BufferedImage[] terrainImage;
 	private Image[] terrainDefs;
 	private int[][] terrainMap;
 	private BufferedImage unitsImage;
-	private Character highlighted;
+	private Unit highlighted;
 	private int currentTeam;
 	private int numMoved;
 	private int state;
 	private int mapFileChoice;
 
 	//Every single object in the game, is made up of the enemies and friendlies arrayLists declared below
-	Character[][] gameBoard;
+	Unit[][] gameBoard;
 
-	//ArrayList<ArrayList<Character>> entities = new ArrayList<ArrayList<Character>>();
+	//ArrayList<ArrayList<Unit>> entities = new ArrayList<ArrayList<Unit>>();
 	//Is sorted with characters with higher intiative ranking higher
-	//ArrayList<Character> initiativeRanking = new ArrayList<Character>();
+	//ArrayList<Unit> initiativeRanking = new ArrayList<Unit>();
 	//Is an array of all the friendly characters
-	ArrayList<Character> friendlies;
+	ArrayList<Unit> friendlies;
 	//Enemy Array list
-	ArrayList<Character> enemies;
-	ArrayList<Character> moved;
+	ArrayList<Unit> enemies;
+	ArrayList<Unit> moved;
 
 	//The following represents the WIDTH/HEIGHT(game currently is square)
 	public int tilesX = 8;
@@ -69,8 +69,8 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	private Timer enemyAIWatch;
 	private Timer animationWatch;
 
-	public TacticalMapWindow(ArrayList<Character> playerUnits, ArrayList<Character> enemyUnits) {
-/*		entities = new ArrayList<Character>();
+	public TacticalMapWindow(ArrayList<Unit> playerUnits, ArrayList<Unit> enemyUnits) {
+/*		entities = new ArrayList<Unit>();
 		entities.addAll(playerUnits);
 		entities.addAll(enemyUnits);*/
 		addMouseListener(this);
@@ -86,9 +86,9 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 
 		friendlies = playerUnits;
 		enemies = enemyUnits;
-		moved = new ArrayList<Character>();
+		moved = new ArrayList<Unit>();
 
-		gameBoard = new Character[tilesY][tilesX];
+		gameBoard = new Unit[tilesY][tilesX];
 
 		/* A new approach to "placing units on the map":
 		 * what we need is a new function, to place these units.
@@ -111,7 +111,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 
 	private void spawnUnits() {
 		for (int playerInd = 0; playerInd < friendlies.size(); playerInd ++) {
-			Character nextUnit = friendlies.get(playerInd);
+			Unit nextUnit = friendlies.get(playerInd);
 			boolean canPlace = false;
 			for (int i=0; i < tilesY; i ++) {
 				for (int j=0; j < tilesX; j++) {
@@ -132,7 +132,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		}
 
 		for (int enemyInd = 0; enemyInd < enemies.size(); enemyInd ++) {
-			Character nextUnit = enemies.get(enemyInd);
+			Unit nextUnit = enemies.get(enemyInd);
 			boolean canPlace = false;
 			for (int i=(tilesY-1); i >= 0; i --) {
 				for (int j=(tilesX-1); j >= 0; j --) {
@@ -173,7 +173,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		state = nextState;
 	}
 
-	public Character recall(int p, int q){
+	public Unit recall(int p, int q){
 		if(gameBoard[p][q] != null) return gameBoard[p][q];
 		return null;
 	}
@@ -195,7 +195,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	}
 
 	//checks to see if a move is valid
-	private boolean moveTest(Character selected, int x, int y){
+	private boolean moveTest(Unit selected, int x, int y){
 		if(x >= tilesX || y >= tilesY || x < 0 || y < 0)
 			return false;
 /*		* Now getting rid of this distance approach
@@ -240,14 +240,14 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	 * Does not depend on the size of a colored map,
 	 * since the EnemyAI takes care of movement decisions.
 	 * */
-	private boolean moveTestEnemy(Character selected, int x, int y){
+	private boolean moveTestEnemy(Unit selected, int x, int y){
 		if (x >= tilesX || y >= tilesY || x < 0 || y < 0)
 			return false;
 		return true;
 	}
 
 	//is the method called to move
-	public boolean move(Character selected, int x, int y){
+	public boolean move(Unit selected, int x, int y){
 		if(moveTest(selected,x,y)){
 			//alters the characters position
 			gameBoard[selected.getY()][selected.getX()] = null;
@@ -260,7 +260,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	}
 
 	//is the method called to move an ENEMY unit
-	public boolean moveEnemy(Character selected, int x, int y){
+	public boolean moveEnemy(Unit selected, int x, int y){
 		if(moveTestEnemy(selected,x,y)){
 			//alters the characters position
 			gameBoard[selected.getY()][selected.getX()] = null;
@@ -379,7 +379,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 
 	public void drawIcons(Graphics manager) {
 		for (int ind = 0; ind < enemies.size(); ind ++) {
-			Character nextEnemy = enemies.get(ind);
+			Unit nextEnemy = enemies.get(ind);
 			renderCharImage(manager, nextEnemy);
 		}
 		for (int ind = 0; ind < friendlies.size(); ind ++) {
@@ -404,7 +404,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		
 	}
 
-	private AffineTransform getTransformToResize(Character n) {
+	private AffineTransform getTransformToResize(Unit n) {
 		double scaleFactor, difference;
 		int x = TILE_SIZE*n.getX();
 		int y = TILE_SIZE*n.getY();
@@ -436,7 +436,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		return result;
 	}
 
-	private void renderCharImage(Graphics gm,/* int indX, int indY,*/ Character p) {
+	private void renderCharImage(Graphics gm,/* int indX, int indY,*/ Unit p) {
 		Graphics2D gm2d = (Graphics2D) gm;
 		AffineTransform applied = getTransformToResize(p);
 		gm2d.drawImage(p.getIcon().getImage(), applied, null);
@@ -575,7 +575,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		return true;
 	}
 
-	private boolean hasMoved(Character x) {
+	private boolean hasMoved(Unit x) {
 		for (int i = 0; i < moved.size();  i++) {
 			if (x == moved.get(i)) {
 				return true;
@@ -614,7 +614,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 			if (currentTeam == 1) {
 
 				for (int enemyInd = 0; enemyInd < enemies.size(); enemyInd ++) {
-					Character nextEn = enemies.get(enemyInd);
+					Unit nextEn = enemies.get(enemyInd);
 					EnemyAI mind = new EnemyAI(gameBoard, terrainMap, nextEn);
 					EnemyMove res = mind.decide();
 					System.out.println(res.toString());
@@ -728,7 +728,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 		}
 		/* Make comparisons such that:
 		 * the NEXT time the user clicks somewhere (specifying a destination location for
-		 * the so-called "selected" Character,
+		 * the so-called "selected" Unit,
 		 * the next if-branch is executed. */
 		if (snapShotState == 1) {
 			repaint();
@@ -800,11 +800,11 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 }
 
 public class TurnBasedSystem extends JFrame {
-	public TurnBasedSystem(ArrayList<Character> sideA, ArrayList<Character> sideB) {
+	public TurnBasedSystem(ArrayList<Unit> sideA, ArrayList<Unit> sideB) {
 		initUI(sideA, sideB);
 	}
 
-	private void initUI(ArrayList<Character> ally, ArrayList<Character> opponent) {
+	private void initUI(ArrayList<Unit> ally, ArrayList<Unit> opponent) {
 		TacticalMapWindow allGraphics = new TacticalMapWindow(ally, opponent);
 		add(allGraphics);
 		setTitle("Mid-Level Simulation");
@@ -814,12 +814,12 @@ public class TurnBasedSystem extends JFrame {
 	}
 
 	public static void main(String[] argv) {
-		ArrayList<Character> sideOne = new ArrayList<Character>();
+		ArrayList<Unit> sideOne = new ArrayList<Unit>();
 		sideOne.add(new Archer(3,5,0));
 		sideOne.add(new Archer(3,6,0));
 		sideOne.add(new Archer(4,6,0));
 
-		ArrayList<Character> sideTwo = new ArrayList<Character>();
+		ArrayList<Unit> sideTwo = new ArrayList<Unit>();
 		sideTwo.add(new Soldier(4,3,1));
 		sideTwo.add(new Soldier(5,3,1));
 

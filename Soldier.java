@@ -23,11 +23,13 @@ public class Soldier extends Unit {
 		sword = new Sword(4,8,7);	
 		name = "Soldier"+name.substring(4);
 	}
+
 	public String toString(){
 		return "S";
 	}
+
 	public void attack(Unit target){
-		System.out.println(checkAdjacent(target.x,target.y));
+/*		System.out.println(checkAdjacent(target.x,target.y));*/
 		if(checkAdjacent(target.x,target.y) && target.team != this.team){
 			sword.attack(this, target);
 		}
