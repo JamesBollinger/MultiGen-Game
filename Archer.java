@@ -1,17 +1,36 @@
-public class Archer extends Character {
+public class Archer extends Unit {
 	//used to determine maximum range
 	int range;
 	//is the type of bow, uses different arrow values for quantity and Armour piercing
 	Bow bow;
 	public Archer(int x, int y, int t){
-		super(x,y,"\"artwork\"/Archer.png",10,5,6,0,0,10,(int)(Math.random()*10), t);
+		super(x,y,"\"artwork\"/Archer.png",10,5,
+			/*magical strength=*/ 3,
+			/*hit speed=*/ 9,
+			/*speed*/ 6,
+			/*luck=*/ 5,
+			/*agility*/ 10,
+			/*armour*/ 0,
+			/*accuracy*/ 10,
+			/*constitution=*/ 4, (int)(Math.random()*10), t,
+			/*magical resistance=*/ 5);
 		range = 10;
 		bow = new Bow(10,5,/*3,*/new Arrow(2,3), 3);
 		weapons[0] = bow;
 		name = ("Archer"+name.substring(4));
 	}
 	public Archer(int x, int y, int t, int ran){
-		super(x,y,"\"artwork\"/Archer.png",10,5,6,0,0,10,(int)(Math.random()*10), t);
+		super(x,y,"\"artwork\"/Archer.png",10,5,
+			/*magical strength=*/ 3,
+			/*hit speed=*/ 9,
+			/*speed*/ 6,
+			/*luck=*/ 5,
+			/*agility*/ 10,
+			/*armour*/ 0,
+			/*accuracy*/ 10,
+			/*constitution=*/ 4, (int)(Math.random()*10), t,
+			/*magical resistance=*/ 5);
+/*		super(x,y,"\"artwork\"/Archer.png",10,5,6,0,0,10,(int)(Math.random()*10), t);*/
 		range = 10;
 		bow = new Bow(10,5,/*3,*/new Arrow(2,3), ran);
 		weapons[0] = bow;
@@ -22,7 +41,7 @@ public class Archer extends Character {
 		return "A";
 	}
 	//Is the attack function for the archer
-	public void attack(Character target){
+	public void attack(Unit target){
 		if(!checkAdjacent(target.x,target.y) && target.team != this.team){
 			bow.attack(this, target);
 		}

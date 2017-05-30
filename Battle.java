@@ -10,27 +10,27 @@ import java.util.ArrayList;
 import java.util.*;
 public class Battle {
 	//Every single object in the game, is made up of the enemies and friendlies arrayLists declared below
-	Character[][] gameBoard;
+	Unit[][] gameBoard;
 
 	// a List for all Entities currently in the battle;
 	// including friendly, enemy, and (possibly) neutral:
 	// I would argue this is needed for 
 	// the purpose of determining, efficiently, which character has the next lowest initiative. --VC
-	ArrayList<Character> initiativeRanking;
+	ArrayList<Unit> initiativeRanking;
 
-	//ArrayList<ArrayList<Character>> entities = new ArrayList<ArrayList<Character>>();
+	//ArrayList<ArrayList<Unit>> entities = new ArrayList<ArrayList<Unit>>();
 	//Is sorted with characters with higher intiative ranking higher
-	//ArrayList<Character> initiativeRanking = new ArrayList<Character>();
+	//ArrayList<Unit> initiativeRanking = new ArrayList<Unit>();
 	//Is an array of all the friendly characters
-	//ArrayList<Character> friendlies;
+	//ArrayList<Unit> friendlies;
 	//Enemy Array list
-	//ArrayList<Character> enemies;
+	//ArrayList<Unit> enemies;
 	//Is the width/height(game currently is square)
 	public int tilesX = 50;
 	public int tilesY = 50;
 	Scanner in = new Scanner(System.in);
 	//Takes in the arrayLists, is designed for latter implementation in which they will be chosen before hand
-	public Battle(ArrayList<Character> friendlies, ArrayList<Character> enemies){
+	public Battle(ArrayList<Unit> friendlies, ArrayList<Unit> enemies){
 		/* I'm not sure if we'll still be keeping these lists separate
 		 * (the list of friendly entities versus enemy units) 
 		 * given that we're using a 2d array for the game board, and each entity knows its "Team"
@@ -68,8 +68,8 @@ public class Battle {
 		entities.add(friendlies);
 		entities.add(enemies);
 */
-		gameBoard = new Character[tilesY][tilesX];
-		initiativeRanking = new ArrayList<Character>();
+		gameBoard = new Unit[tilesY][tilesX];
+		initiativeRanking = new ArrayList<Unit>();
 		initiativeRanking.addAll(friendlies);
 		initiativeRanking.addAll(enemies);
 		
@@ -110,7 +110,7 @@ public class Battle {
 	}
 	*/
 	// replacement for the preivous search
-	public Character recall(int p, int q){
+	public Unit recall(int p, int q){
 		if(gameBoard[p][q] != null) return gameBoard[p][q];
 		return null;
 	}
@@ -130,7 +130,7 @@ public class Battle {
 		return ret;
 	}
 	//checks to see if a move is valid
-	private boolean moveTest(Character selected, int x, int y){
+	private boolean moveTest(Unit selected, int x, int y){
 		if(x >= tilesX || y >= tilesY || x < 0 || y < 0)
 			return false;
 		int distance;
@@ -161,7 +161,7 @@ public class Battle {
 		return true;
 	}
 	//is the method called to move
-	public void move(Character selected, int x, int y){
+	public void move(Unit selected, int x, int y){
 		if(moveTest(selected,x,y)){
 			//alters the characters position
 			gameBoard[selected.getY()][selected.getX()] = null;
@@ -193,7 +193,7 @@ public class Battle {
 		return -1;
 	}
 	//Is used solely in the production of the character
-	public void makeAction(Character actor){
+	public void makeAction(Unit actor){
 		//System.out.println("moving about");
 		System.out.print("Enter the destination column value: ");
 		int x = in.nextInt();
@@ -228,19 +228,19 @@ public class Battle {
 		}
 	}
 */
-	private ArrayList<Character> heapify(ArrayList<Character> inputList){
+	private ArrayList<Unit> heapify(ArrayList<Unit> inputList){
 		int index = inputList.size() - 1;
 		if ((index % 2) == 1) {
 			/* make one initial comparison beforehand, then
 			 * decrement index to make sure that index begins the
 			 * routine as an even integer.
 			 * */
-			Character lastEle = inputList.get(index);
+			Unit lastEle = inputList.get(index);
 			int parentInd = ((index - 1) / 2);
-			Character parent = inputList.get(parentInd);
+			Unit parent = inputList.get(parentInd);
 			if ((lastEle.getInit() < (parent.getInit()))) {
 				/* swap the child and parent Objects */
-				Character tmp = parent;
+				Unit tmp = parent;
 				inputList.set(parentInd, lastEle);
 				inputList.set(index, tmp);
 			}
@@ -248,7 +248,7 @@ public class Battle {
 		}
 		while (index > 0) {
 			int childIndex;
-			Character lesserChild;
+			Unit lesserChild;
 			if (inputList.get(index-1).getInit() < (inputList.get(index).getInit())) {
 				lesserChild = inputList.get(index-1);
 				childIndex = index-1;
@@ -257,10 +257,10 @@ public class Battle {
 				childIndex = index;
 			}
 			int parentInd = ((index - 1) / 2);
-			Character parent = inputList.get(parentInd);
+			Unit parent = inputList.get(parentInd);
 			if ((lesserChild.getInit() < (parent.getInit()))) {
 				/* swap the child and parent Objects */
-				Character tmp = parent;
+				Unit tmp = parent;
 				inputList.set(parentInd, lesserChild);
 				inputList.set(childIndex, tmp);
 				/* NOTE: so that I don't forget!!!
@@ -278,7 +278,7 @@ public class Battle {
 		return inputList;
 	}
 
-	private ArrayList<Character> siftDown(ArrayList<Character> preSift, int startInd){
+	private ArrayList<Unit> siftDown(ArrayList<Unit> preSift, int startInd){
 		int size = preSift.size();
 		int currentInd = startInd;
 		int leftInd = (2*startInd) + 1;
@@ -289,7 +289,7 @@ public class Battle {
 			 * and compare to the current node
 			 *  
 			 * */
-			Character lesserChild;
+			Unit lesserChild;
 			int nextCurrent;
 			if (preSift.get(leftInd).getInit() < (preSift.get(rightInd).getInit())) {
 				lesserChild = preSift.get(leftInd);
@@ -301,7 +301,7 @@ public class Battle {
 
 			if (lesserChild.getInit() < (preSift.get(currentInd).getInit())) {
 				/* swap the relevant data entries */
-				Character tmp = preSift.get(currentInd);
+				Unit tmp = preSift.get(currentInd);
 				preSift.set(currentInd, lesserChild);
 				preSift.set(nextCurrent, tmp);
 				/* and continue sifting down      */
@@ -316,11 +316,11 @@ public class Battle {
 			}
 		}
 		if ((leftInd < size) && (preSift.get(leftInd) != null)) {
-			Character lesserChild = preSift.get(leftInd);
+			Unit lesserChild = preSift.get(leftInd);
 			int nextCurrent = leftInd;
 			if (lesserChild.getInit() < (preSift.get(currentInd).getInit())) {
 				/* swap the relevant data entries */
-				Character tmp = preSift.get(currentInd);
+				Unit tmp = preSift.get(currentInd);
 				preSift.set(currentInd, lesserChild);
 				preSift.set(nextCurrent, tmp);
 			}
@@ -328,15 +328,15 @@ public class Battle {
 		return preSift;
 	}
 
-	private ArrayList<Character> heapsort(ArrayList<Character> input){
+	private ArrayList<Unit> heapsort(ArrayList<Unit> input){
 		int size = input.size();
-		ArrayList<Character> inter = heapify(input);
-		ArrayList<Character> result = new ArrayList<Character>(size);
+		ArrayList<Unit> inter = heapify(input);
+		ArrayList<Unit> result = new ArrayList<Unit>(size);
 		for (int ind = 0; ind < size; ind ++) {
 			result.add(null);
 		}
 		while (size > 0) {
-			Character tmp = inter.get(0);
+			Unit tmp = inter.get(0);
 			inter.set(0, inter.get(size-1));
 			inter.set(size-1, null);
 			result.set(size-1, tmp);
@@ -364,8 +364,8 @@ public class Battle {
 	}
 	//How I actually run and test the program
 	public static void main(String[] args){
-		ArrayList<Character> one = new ArrayList<Character>(); one.add(new Archer(0, 1, 0)); one.add(new Archer(0,2,0));
-		ArrayList<Character> two = new ArrayList<Character>(); two.add(new Soldier(3,1, 1)); two.add(new Soldier(3,2,1));
+		ArrayList<Unit> one = new ArrayList<Unit>(); one.add(new Archer(0, 1, 0)); one.add(new Archer(0,2,0));
+		ArrayList<Unit> two = new ArrayList<Unit>(); two.add(new Soldier(3,1, 1)); two.add(new Soldier(3,2,1));
 		Battle fight = new Battle(one,two);
 		System.out.println(fight);
 		fight.play();

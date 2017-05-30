@@ -9,13 +9,21 @@ public class Sword extends Weapon {
 	//this checks if the target can dodge
 	//if the targets dodge is over three times the attackers speed this will always miss
 	//the more that the attackers speed is above the targets dodge value the more it will succeed
-	private boolean dodgeTest(Character attacker, Character target){
+	private boolean dodgeTest(Unit attacker, Unit target){
 		return ((double)target.dodge/(double)target.speed <= Math.random()*3);
 	}
-	public void attack(Character attacker,Character target){
+	public void attack(Unit attacker, Unit target){
 		if(dodgeTest(attacker,target)){
-			dealDamage(target);
-			System.out.println("hit");
+/*			dealDamage(target);*/
+			int armourDifference = armourPiercing - target.armour;
+			if(armourDifference > 0) armourDifference = 0;
+			target.dealDamage(
+				((int)(Math.random()*(maxDamage-minDamage)) + minDamage - armourDifference),
+				attacker,
+				attacker.getStrength(),
+				maxDamage,
+				0);
+/*			System.out.println("hit");*/
 		}
 	}
 }

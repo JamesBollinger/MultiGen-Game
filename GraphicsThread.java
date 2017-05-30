@@ -4,12 +4,12 @@ public class GraphicsThread implements Runnable {
 
 /*
 	int[][] terrain;
-	Character[][] players;
+	Unit[][] players;
 */
-	private ArrayList<Character> savedFriendlyUnits;
-	private ArrayList<Character> savedEnemyUnits;
+	private ArrayList<Unit> savedFriendlyUnits;
+	private ArrayList<Unit> savedEnemyUnits;
 
-	public GraphicsThread(ArrayList<Character> playerUnits, ArrayList<Character> enemyUnits) {
+	public GraphicsThread(ArrayList<Unit> playerUnits, ArrayList<Unit> enemyUnits) {
 		savedFriendlyUnits = playerUnits;
 		savedEnemyUnits = enemyUnits;
 	}

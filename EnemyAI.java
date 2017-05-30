@@ -11,15 +11,15 @@ import java.awt.Point;
 
 public class EnemyAI {
 
-	private Character[][] unitMap;
+	private Unit[][] unitMap;
 	private int[][] landMap;
-	private Character currentEnemy;
+	private Unit currentEnemy;
 	private int tilesX, tilesY;
 	private int enemySide;
 	private int opponentSideNW, opponentSideNE,
 		    opponentSideSE, opponentSideSW;
 
-	public EnemyAI(Character[][] map, int[][] land, Character unit) {
+	public EnemyAI(Unit[][] map, int[][] land, Unit unit) {
 		unitMap = map;
 		landMap = land;
 		currentEnemy = unit;
@@ -36,7 +36,7 @@ public class EnemyAI {
 	/* An alternate Constructor, in case we need it.
 	 * I doubt we will, but I include it just in case 
 	 * for some reason we DON'T have immediate access to
-	 * the enemy Character object reference
+	 * the enemy Unit object reference
 	 * when we want to use this class. 
 	 * 
 	 * Or, better yet, in the future we might consolidate the EnemyAI framework,
@@ -44,7 +44,7 @@ public class EnemyAI {
 	 * EnemyAI objects for each enemy unit. (That way, enemy's strategies 
 	 * may be better coordinated with one another in a grand strategy.) 
 	 * */
-	public EnemyAI(Character[][] map, int[][] land, int col, int row) {
+	public EnemyAI(Unit[][] map, int[][] land, int col, int row) {
 		unitMap = map;
 		landMap = land;
 		currentEnemy = map[row][col];
@@ -205,7 +205,7 @@ public class EnemyAI {
 			int i = 0;
 			while (((i+j) <= speed) && (x < tilesX)) {
 				if (unitMap[y][x] != null) {
-					Character nextUnit = unitMap[y][x];
+					Unit nextUnit = unitMap[y][x];
 					if (nextUnit.getTeam() == 1) {
 						enemySide ++;
 					} else {
@@ -228,7 +228,7 @@ public class EnemyAI {
 			int y = currentEnemy.getY(); int j = 0;
 			while (((i+j) <= speed) && (y < tilesY)) {
 				if (unitMap[y][x] != null) {
-					Character nextUnit = unitMap[y][x];
+					Unit nextUnit = unitMap[y][x];
 					if (nextUnit.getTeam() == 1) {
 						enemySide ++;
 					} else {
@@ -252,7 +252,7 @@ public class EnemyAI {
 			int i = 0;
 			while (((i+j) <= speed) && (x >= 0)) {
 				if (unitMap[y][x] != null) {
-					Character nextUnit = unitMap[y][x];
+					Unit nextUnit = unitMap[y][x];
 					if (nextUnit.getTeam() == 1) {
 						enemySide ++;
 					} else {
@@ -276,7 +276,7 @@ public class EnemyAI {
 			int j = 0;
 			while (((i+j) <= speed) && (y >= 0)) {
 				if (unitMap[y][x] != null) {
-					Character nextUnit = unitMap[y][x];
+					Unit nextUnit = unitMap[y][x];
 					if (nextUnit.getTeam() == 1) {
 						enemySide ++;
 					} else {
