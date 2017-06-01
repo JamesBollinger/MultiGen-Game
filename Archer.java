@@ -1,6 +1,8 @@
 public class Archer extends Unit {
 	//used to determine maximum range
 	int range;
+	//used in order to store the actual arrows
+	Quiver arrows;
 	//is the type of bow, uses different arrow values for quantity and Armour piercing
 	Bow bow;
 	public Archer(int x, int y, int t){
@@ -40,10 +42,43 @@ public class Archer extends Unit {
 	public String toString(){
 		return "A";
 	}
+
 	//Is the attack function for the archer
-	public void attack(Unit target){
-		if(!checkAdjacent(target.x,target.y) && target.team != this.team){
-			bow.attack(this, target);
+	/* Update: since attack() is not going to be a method call
+	 * of the Weapon class, this needs to be rewritten
+	 * */
+	public void attack(Unit target, Weapon chosenWeapon){
+		/* 
+		 * There are two important checks here:
+		 * whether the quiver of arrows has enough (is now empty),
+		 * and a check on whether the archer is not trying to 
+		 *    shoot a teammate.
+		 * (I suspect the team check is unnecessary but 
+		 *  I will keep it in this version as a consistency check)
+		 * 
+		 * */
+		if ((target.getTeam() != getTeam()) && (arrows.shoot())) {
+			if(Weapon.accuracyTest(chosenWeapon.getRange(),
+					target.getDodge(), getAccuracy(), 0)){
+				int armourDifference = chosenWeapon.getAP()-target.getArmour();
+				if(armourDifference > 0) armourDifference = 0;
+				target.dealDamage(
+					((int)(Math.random()*(chosenWeapon.getMaxDamage()-
+						chosenWeapon.getMinDamage()))
+						+ chosenWeapon.getMinDamage()
+						- armourDifference),
+					this,
+					getStrength(),
+					chosenWeapon.getMaxDamage(),
+					0);
+/*				System.out.println("hit");*/
+			} else {
+/*				System.out.println("missed");*/
+			}
+		} else if ((target.getTeam() == getTeam())) {
+			throw new UnsupportedOperationException("Inconsistency -- unit "+toString()+" is trying to target a teammate!");
+		} else {
+/*			System.out.println("Quiver of arrows is empty!");	*/
 		}
 	}
 }

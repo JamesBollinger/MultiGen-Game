@@ -130,7 +130,6 @@ public abstract class Unit extends Entity {
 			health -= d;
 		}
 		checkUp();
-
 	}
 	public void checkUp(){
 		if(health <= 0)
@@ -148,15 +147,21 @@ public abstract class Unit extends Entity {
 	public int getSpeed(){
 		return speed;
 	}
-    public int getArmour(){
+	public int getArmour(){
 		return armour;
-    }
-    public int getLuck(){
+	}
+	public int getDodge(){
+		return dodge;
+	}
+	public int getAccuracy(){
+		return accuracy;
+	}
+	public int getLuck(){
 		return luck;
-    }
-    public int getStrength(){
+	}
+	public int getStrength(){
 		return strength;
-    }
+	}
 	
 	//All of these values should be inputed as either a plus of minus to change it up or down
 	public void setStrength(int change){
@@ -179,13 +184,17 @@ public abstract class Unit extends Entity {
 	}	
 	
 	//Basic Combat Interactions
-	public void move(int x,int y){this.x = x;this.y = y;}
+	public void move(int x,int y){
+		setX(x);
+		setY(y);
+	}
 	//The attack methods have been combined, with which weapons and whether it is a ranged attack being down at a lower level
 	//Actual computation of dodging and accuracy will be done at lower levels
 	//will also assume it is a valid attack;
-	public void attack(Unit target, Weapon weapon){
-		weapon.attack(this,target);
-	}
+	/* EDIT: now, this method will actually run some internal
+	 * checks to make sure it's a valid attack
+	 * */
+	public abstract void attack(Unit target, Weapon weapon);
 	public void alter(Unit target, String stat, int change){
 		if(stat.equals("dodge")) target.setDodge(change);
 		else if(stat.equals("strength")) target.setStrength(change);
@@ -196,7 +205,10 @@ public abstract class Unit extends Entity {
 		else if(stat.equals("hitSpeed")) target.setHitSpeed(change);
 		else if(stat.equals("luck")) target.setLuck(change);
 		else if(stat.equals("constitution")) target.setConsitution(change);
-		else System.out.println("invalid attribute");
+		else {
+ 	 		System.out.println("invalid attribute");
+			throw new UnsupportedOperationException(stat+" is not a valid attribute.");
+		}
 	}
 	
 	//For the statuses it will simply add the status string to a string arrayList and then at lower levels in conjunction with action listener, block actions or add modifiers

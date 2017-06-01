@@ -11,7 +11,9 @@ import javax.swing.ImageIcon;
 public abstract class Entity {
 	public static final int MAX_NUM_WEAPONS = 4;
 	//This are the primary instances that everything uses
-	ImageIcon sprite;int x;int y;
+	ImageIcon sprite;
+	private int x;
+	private int y;
 	public Entity(int r, int j, String img) {
 		x = r;
 		y = j;
@@ -26,15 +28,23 @@ public abstract class Entity {
 		return "n";
 	}
 	public boolean checkAdjacent(int x, int y){
-		return(x + 1 == this.x && y + 0 == this.y ||
-			   x - 1 == this.x && y + 0 == this.y ||
-			   x + 1 == this.x && y + 1 == this.y ||
-			   x + 1 == this.x && y - 1 == this.y ||
-			   x - 1 == this.x && y + 1 == this.y ||
-			   x - 1 == this.x && y - 1 == this.y ||
-			   x + 0 == this.x && y + 1 == this.y ||
-			   x + 0 == this.x && y - 1 == this.y
+		/* This is a more efficient implementation
+		 * of checking if two entities are adjacent:
+		 * calculate rectangular distance, and if it equals one,
+		 * then they must be adjacent. */
+		int distance = ((getX() - x) + (getY() - y));
+		return ((distance == 1) || (distance == (-1)));
+		/*
+		return(x + 1 == this.getX() && y + 0 == this.getY() ||
+			   x - 1 == this.getX() && y + 0 == this.getY() ||
+			   x + 1 == this.getX() && y + 1 == this.getY() ||
+			   x + 1 == this.getX() && y - 1 == this.getY() ||
+			   x - 1 == this.getX() && y + 1 == this.getY() ||
+			   x - 1 == this.getX() && y - 1 == this.getY() ||
+			   x + 0 == this.getX() && y + 1 == this.getY() ||
+			   x + 0 == this.getX() && y - 1 == this.getY()
 			   );
+		*/
 	}
 
 	public int getX(){
