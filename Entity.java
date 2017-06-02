@@ -15,10 +15,11 @@ public abstract class Entity {
 	private int x;
 	private int y;
 	public Entity(int r, int j, String img) {
+		System.out.println(img);
 		x = r;
 		y = j;
 		try {
-			sprite  = new ImageIcon(ImageIO.read(Entity.class.getResourceAsStream(img)));
+			sprite = new ImageIcon(ImageIO.read(Entity.class.getResourceAsStream(img)));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

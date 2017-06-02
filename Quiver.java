@@ -1,5 +1,5 @@
 public class Quiver{
-	int armourPiercing, available, max;
+	private int armourPiercing, available, max;
 	
 	public Quiver(int a, int q){
 		armourPiercing = a;
@@ -28,5 +28,9 @@ public class Quiver{
 
 	public int getNumAvailable(){
 		return available;
+	}
+	
+	public int getAP(){
+		return armourPiercing;
 	}
 }

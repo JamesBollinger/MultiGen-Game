@@ -10,7 +10,7 @@ public class Soldier extends Unit {
 		int imgIndex = (int) (Math.random()*5);
 		String imgSrc = new String("\"artwork\"/nic-cage-" + imgIndex + ".jpg");
 */
-		super(x,y,"\"artwork\"/nic-cage-"+((int)(Math.random()*5))+".jpg",10,5,
+		super(x,y,Logger.root_dir+"nic-cage-"+((int)(Math.random()*5))+".jpg",10,5,
 			/*magical strength=*/ 1,
 			/*hit speed=*/ 10,
 			/*speed*/ 6,

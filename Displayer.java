@@ -15,27 +15,25 @@ import java.awt.*;
 
    public class Displayer extends Canvas{
 	
-      
 		JFrame frame;
 		private BufferStrategy strategy;
 		
 		Battle fight;
-		public Archer testObject = new Archer(0,0);
-      public Displayer(){
-         
+		public Archer testObject = new Archer(0,0,0);
+ 		public Displayer(){
+ 			
 			frame = new JFrame("Displayer");
 			frame.add(this);
-         frame.setSize(1000,1000);
-         frame.getContentPane().setBackground(Color.WHITE);
-         frame.setVisible(true);
-         frame.setResizable(false);
-         frame.addWindowListener(
+			frame.setSize(1000,1000);
+			frame.getContentPane().setBackground(Color.WHITE);
+			frame.setVisible(true);
+			frame.setResizable(false);
+			frame.addWindowListener(
                new WindowAdapter() { 
                   public void windowClosing(WindowEvent e) {System.exit(0);} 
                });
          //fight = new Battle();
 			render();
-					
       }
       public static void main(String[] args){
          Displayer test = new Displayer();

@@ -199,7 +199,7 @@ public class Battle {
 		int x = in.nextInt();
 		System.out.print("Enter the destination row value: ");
 		int y = in.nextInt();
-		System.out.println("About to move to col " + actor.x + ", row " + actor.y);
+		System.out.println("About to move to col " + actor.getX() + ", row " + actor.getY());
 		move(actor,x,y);
 	}
 	//This is the game loop, designed to run until as single team is utterly defeated

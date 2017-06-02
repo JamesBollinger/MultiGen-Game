@@ -6,7 +6,7 @@ public class Archer extends Unit {
 	//is the type of bow, uses different arrow values for quantity and Armour piercing
 	Bow bow;
 	public Archer(int x, int y, int t){
-		super(x,y,"\"artwork\"/Archer.png",10,5,
+		super(x, y, Logger.root_dir+"Archer.png", 10, 5,
 			/*magical strength=*/ 3,
 			/*hit speed=*/ 9,
 			/*speed*/ 6,
@@ -17,12 +17,12 @@ public class Archer extends Unit {
 			/*constitution=*/ 4, (int)(Math.random()*10), t,
 			/*magical resistance=*/ 5);
 		range = 10;
-		bow = new Bow(10,5,/*3,*/new Arrow(2,3), 3);
+		bow = new Bow(10,5,/*3,*/new Quiver(2,3), 3);
 		weapons[0] = bow;
 		name = ("Archer"+name.substring(4));
 	}
 	public Archer(int x, int y, int t, int ran){
-		super(x,y,"\"artwork\"/Archer.png",10,5,
+		super(x, y, Logger.root_dir+"Archer.png", 10, 5,
 			/*magical strength=*/ 3,
 			/*hit speed=*/ 9,
 			/*speed*/ 6,
@@ -34,7 +34,7 @@ public class Archer extends Unit {
 			/*magical resistance=*/ 5);
 /*		super(x,y,"\"artwork\"/Archer.png",10,5,6,0,0,10,(int)(Math.random()*10), t);*/
 		range = 10;
-		bow = new Bow(10,5,/*3,*/new Arrow(2,3), ran);
+		bow = new Bow(10,5,/*3,*/new Quiver(2,3), ran);
 		weapons[0] = bow;
 		name = ("Archer"+name.substring(4));
 	}

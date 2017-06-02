@@ -23,7 +23,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
 
-class TacticalMapWindow extends JPanel implements MouseListener, ActionListener {
+class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener {
 	/* 
 	 * First, define some constants that are used
 	 * throughout the class.
@@ -93,7 +93,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	private Timer enemyAIWatch;
 	private Timer animationWatch;
 
-	public TacticalMapWindow(ArrayList<Unit> playerUnits, ArrayList<Unit> enemyUnits) {
+	public TacticalMapWindow2(ArrayList<Unit> playerUnits, ArrayList<Unit> enemyUnits) {
 /*		entities = new ArrayList<Unit>();
 		entities.addAll(playerUnits);
 		entities.addAll(enemyUnits);*/
@@ -1259,7 +1259,7 @@ public class TurnBasedSystemWithHighlightedMenu extends JFrame {
 	}
 
 	private void initUI(ArrayList<Unit> ally, ArrayList<Unit> opponent) {
-		TacticalMapWindow allGraphics = new TacticalMapWindow(ally, opponent);
+		TacticalMapWindow2 allGraphics = new TacticalMapWindow2(ally, opponent);
 		add(allGraphics);
 		setTitle("Mid-Level Simulation");
 		setSize(880, 720);
@@ -1268,9 +1268,9 @@ public class TurnBasedSystemWithHighlightedMenu extends JFrame {
 	}
 
 	public static void main(String[] argv) {
-		Bow bowInst0 = new Bow(4, 8, new Arrow(1, 19), 4);
-		Bow bowInst1 = new Bow(3, 7, new Arrow(1, 19), 3);
-		Bow bowInst2 = new Bow(2, 7, new Arrow(1, 19), 2);
+		Bow bowInst0 = new Bow(4, 8, new Quiver(1, 19), 4);
+		Bow bowInst1 = new Bow(3, 7, new Quiver(1, 19), 3);
+		Bow bowInst2 = new Bow(2, 7, new Quiver(1, 19), 2);
 
 		ArrayList<Unit> sideOne = new ArrayList<Unit>();
 		Archer arch0 = (new Archer(3,5,0));
