@@ -12,5 +12,5 @@ javac -cp . Bow.java
 javac -cp . GraphicsThreadWithMenu.java
 javac -cp . Logger.java
 javac -cp . Item.java
-echo ""
+echo "Compilation finished."
 pause

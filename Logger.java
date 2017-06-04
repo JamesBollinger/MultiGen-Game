@@ -12,7 +12,7 @@ import java.io.PrintWriter;
 
 public class Logger {
 	/* Can replace this with your own directory structure */
-	public static final String root_dir="\"artwork\"/";
+	public static final String root_dir="artwork/";
 
 	/* In the future, the directory structure will be split
 	 * into red and map directories */
