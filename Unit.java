@@ -64,7 +64,7 @@ public abstract class Unit extends Entity {
 		
 		inventory = new LinkedList<Item>();
 		weapons = new Weapon[Entity.MAX_NUM_WEAPONS];
-		name = new String("Unit(Team "+t+"):HP "+h+";SPD "+sp+";ACC "+ac);
+		name = new String("Unit(Team "+team+"):HP "+health+";SPD "+speed+";ACC "+accuracy);
 	}
 	
 	public Unit(int x, int y, String img, int h, int s, int ms,

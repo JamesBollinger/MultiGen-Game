@@ -1,8 +1,6 @@
 public class Archer extends Unit {
 	//used to determine maximum range
 	int range;
-	//used in order to store the actual arrows
-	Quiver arrows;
 	//is the type of bow, uses different arrow values for quantity and Armour piercing
 	Bow bow;
 	public Archer(int x, int y, int t){
@@ -40,7 +38,7 @@ public class Archer extends Unit {
 	}
 	//Used primarly for inconsole testing
 	public String toString(){
-		return "A";
+		return (name+"@"+getX()+","+getY());
 	}
 
 	//Is the attack function for the archer
@@ -57,7 +55,7 @@ public class Archer extends Unit {
 		 *  I will keep it in this version as a consistency check)
 		 * 
 		 * */
-		if ((target.getTeam() != getTeam()) && (arrows.shoot())) {
+		if ((target.getTeam() != getTeam()) && (bow.getQuiver().shoot())) {
 			if(Weapon.accuracyTest(chosenWeapon.getRange(),
 					target.getDodge(), getAccuracy(), 0)){
 				int armourDifference = chosenWeapon.getAP()-target.getArmour();

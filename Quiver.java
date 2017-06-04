@@ -3,6 +3,7 @@ public class Quiver{
 	
 	public Quiver(int a, int q){
 		armourPiercing = a;
+		max = q;
 		available = q;
 	}
 	
@@ -32,5 +33,9 @@ public class Quiver{
 	
 	public int getAP(){
 		return armourPiercing;
+	}
+
+	public int getMax(){
+		return max;
 	}
 }

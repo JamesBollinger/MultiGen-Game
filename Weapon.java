@@ -4,7 +4,7 @@
  * is where the target actually gets assigned damage to take
  */
 public abstract class Weapon{
-	int minDamage, maxDamage, armourPiercing, range;
+	protected int minDamage, maxDamage, armourPiercing, range;
 	public Weapon(int mI,int mD, int aR){
 	 	minDamage = mI; maxDamage = mD; armourPiercing = aR;
 		// Make 1 the default range?

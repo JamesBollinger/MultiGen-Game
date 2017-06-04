@@ -35,6 +35,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	private final int GRANDWIDTH = 800;
 	private final int WIDTH = 640;
 	private final int HEIGHT = 640;
+	private final int NUM_SIDES = 2; // the number of different tactical factions/"sides"
 
 	/* number of pixels spanning the HEIGHT of each tile */
 	private final int TILE_SIZE  = 80;
@@ -65,7 +66,8 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	private BufferedImage unitsImage;
 
 	private HashSet<Unit> inRange;
-	private Unit highlighted;
+	private Unit highlighted, target;
+	private Weapon sWeapon;
 	private int currentTeam;
 	private int numMoved;
 	private HashMap<Unit, ArrayList<Weapon>> validWeaponsPerUnit;
@@ -436,6 +438,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	}
 
 	public void drawMenu(Graphics renderer) {
+		System.out.println("now about to draw the menu on screen");
 		Graphics2D rend2d = (Graphics2D) renderer;
 		int numHaltOptions = menu.size();
 
@@ -1045,6 +1048,20 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 		}
 	}
 
+	private void endUnitTurn() {
+		/* Finalize the move */
+		moved.add(highlighted);
+		if (allUnitsMoved()) {
+			currentTeam ++;
+			currentTeam %= NUM_SIDES;
+			moved.clear();
+		} else {
+			System.out.println("Not all player units have moved, apparently.");
+		}
+		repaint();
+		setState(0);
+	}
+
 	@Override
 	public void mouseClicked(MouseEvent ev) {
 		int xClick = ev.getX();
@@ -1109,7 +1126,6 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 			boolean moveStatus;
 			moveStatus = move(highlighted, xInd, yInd);
 			if (moveStatus) {
-				moved.add(highlighted);
 				terrainImage[1] = null;
 				repaint();
 				setState(4);
@@ -1117,29 +1133,25 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 			}
 		}
 		if (snapShotState == 4) {
+			/* *
+			 * Note: this is the moment where
+			 * the Unit has stopped moving, and
+			 * we need to generate the halt menu.
+			 * So, to make things easier,
+			 * we also compute the set of enemies in range from this location.
+			 * */
 			makeHaltMenu(highlighted, xClick, yClick);
 			repaint();
 			setState(5);
 		} else if (snapShotState == 5) {
+			/* User just clicked on SOMETHING
+			 * that was part of the halt menu */
 			if (xClick > WIDTH) {
 				int menuNum = (yClick / (MENU_TILE_HEIGHT+1));
 				if (menuNum >= (menu.size()-1)) {
-					showMenu = false;
+/*					showMenu = false;*/
 					terrainImage[2] = null;
-					/* Finalize the move */
-					repaint();
-					if (allUnitsMoved()) {
-						currentTeam ++;
-						currentTeam %= 2;
-						moved.clear();
-					} else {
-/*
-						System.out.println("Not all player units have moved, apparently.");
-*/
-					}
-					repaint();
-					setState(0);
-
+					endUnitTurn();
 				} else {
 					/* need to respond to the specific option
 					 * pressed */
@@ -1150,14 +1162,14 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 						// We wish to display a new menu,
 						// but not using the same makeMenu() method as before...
 						// this is a simpler custom menu, so: create it right here
-						menu.clear();
 						int colPxl = (WIDTH+1);
 						int rowPxl = 1;
+						menu.clear();
 						Iterator<Unit> inRangeIter = inRange.iterator();
 						while (inRangeIter.hasNext()) {
 							Unit nextEne = inRangeIter.next();
 							Point nextCorner = new Point(colPxl, rowPxl);
-							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.name(), this));
+							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
 							rowPxl += (MENU_TILE_HEIGHT+1);
 						}
 						Point nextCorner = new Point(colPxl, rowPxl);
@@ -1196,45 +1208,137 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 				}
 
 			}
-		} else if (snapShotState == 6) { /* "Attack" option seelcted */
+		} else if (snapShotState == 6) {
+			/* A single particular enemy to attack has just been seelcted */
 			if (xClick > WIDTH) {
 				int menuNum = (yClick / (MENU_TILE_HEIGHT+1));
 				if (menuNum >= (menu.size()-1)) {
-					showMenu = false;
-					terrainImage[2] = null;
-					/* Finalize the move */
-					/* TODO generate the LIST of */
+					makeHaltMenu(highlighted, xClick, yClick);
+					showMenu = true;
 					repaint();
-					if (allUnitsMoved()) {
-						currentTeam ++;
-						currentTeam %= 2;
-						moved.clear();
-					} else {
-/*
-						System.out.println("Not all player units have moved, apparently.");
-*/
-					}
-					setState(0);
+					setState(5);
+				} else {
+					/* List all valid weapons in the menu */
 					
+					
+					
+					String targetData = menu.get(menuNum).getText();
+					String pairString = targetData.substring(targetData.indexOf("@")+1);
+					int targetX = Integer.parseInt(pairString.substring(0, pairString.indexOf(",")));
+					int targetY = Integer.parseInt(pairString.substring(1+pairString.indexOf(",")));
+					target = gameBoard[targetY][targetX];
+					
+					int colPxl = (WIDTH+1);
+					int rowPxl = 1;
+					int actualDist = Math.abs(getX()-targetX)+Math.abs(getY()-targetY);
+					Weapon[] allChoices = highlighted.getWeapons();
+					menu.clear();
+					for (int ind=0; ind < allChoices.length; ind ++) {
+						Weapon nextChoice = allChoices[ind];
+						if ((nextChoice != null) && 
+							(nextChoice.getRange() < actualDist)) {
+							System.out.println("adding weapon choice");
+							Point nextCorner = new Point(colPxl, rowPxl);
+							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextChoice.toString(), this));
+							rowPxl += (MENU_TILE_HEIGHT+1);
+						}
+					}
+					Point nextCorner = new Point(colPxl, rowPxl);
+					menu.add(new HaltMenuOption(nextCorner,
+						MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Back", this));
+					System.out.printf("size of weapons list menu: %d\n\n", menu.size());
+					showMenu = true;
+					repaint();
+					setState(7);
 				}
 				
 			}
 		} else if (snapShotState == 7) {
-			System.out.println("IN DEVELOPMENT");
-			System.out.println("Eventually the client will be able to choose an enemy to attack etc...");
-			
+			/* A target enemy has already been selected, so 
+			 * this is actually the section where
+			 * the user just chose a weapon with which to attack */
+			if (xClick > WIDTH) {
+				int menuNum = (yClick / (MENU_TILE_HEIGHT+1));
+				if (menuNum >= ((menu.size()-1))) {
+					/* "back" has been selected? so go back */
+					int colPxl = (WIDTH+1);
+					int rowPxl = 1;
+					menu.clear();
+					Iterator<Unit> inRangeIter = inRange.iterator();
+					while (inRangeIter.hasNext()) {
+						Unit nextEne = inRangeIter.next();
+						Point nextCorner = new Point(colPxl, rowPxl);
+						menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
+						rowPxl += (MENU_TILE_HEIGHT+1);
+					}
+					Point nextCorner = new Point(colPxl, rowPxl);
+					menu.add(new HaltMenuOption(nextCorner,
+						MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Skip", this));
+					showMenu = true;
+					repaint();
+					setState(6);
+				} else {
+					/* process attacking a single enemy unit */
+					sWeapon = highlighted.getWeapons()[menuNum];
+					highlighted.attack(target, sWeapon);
+					if (! target.isUp()) {
+						/* If the unit is down,
+						 * remove it from the game board */
+						int x = target.getX();
+						int y = target.getY();
+						gameBoard[y][x] = null;
+						for (int ind=0; ind < enemies.size(); ind ++) {
+							Unit nextE = enemies.get(ind);
+							if (nextE == target) {
+								enemies.remove(ind);
+								ind = enemies.size()+2;
+							}
+						}
+					}
+					if (! highlighted.isUp()) {
+						/* If the unit is down,
+						 * remove it from the game board */
+						int x = highlighted.getX();
+						int y = highlighted.getY();
+						gameBoard[y][x] = null;
+						for (int ind=0; ind < friendlies.size(); ind ++) {
+							Unit nextE = friendlies.get(ind);
+							if (nextE == target) {
+								friendlies.remove(ind);
+								ind = friendlies.size()+2;
+							}
+						}
+					}
+					sWeapon = null;
+					target = null;
+					showMenu = false;
+					endUnitTurn();
+				}
 //	    		showMenu = false;
-			repaint();
-			setState(8);
-		} else if (snapShotState == 8) {
+			}
+		/* If, in some future version, we want something to occur AFTER
+		 * moving all a player's units
+		 * (akin to an "end-step" of a player phase)
+		 * then uncomment the next few lines to
+		 * make a "state 8" case.
+		 *
+		 * Otherwise leave it commented.
+		 * */
+
+		}/* else if (snapShotState == 8) {
+			if (allUnitsMoved()) {
+				currentTeam ++;
+				currentTeam %= NUM_SIDES;
+				moved.clear();
+			}
 			repaint();
 			setState(0);
-		}
+		}*/
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent ev) {
-/*		System.out.println("mouse has been released.");  */
+/*		System.out.println("mouse has been released.");*/
 	}
 
 	@Override

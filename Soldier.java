@@ -25,7 +25,7 @@ public class Soldier extends Unit {
 	}
 
 	public String toString(){
-		return "Soldier";
+		return ("Soldier(Team "+team+"):HP "+health+";SPD "+speed+";ACC "+accuracy+"@"+getX()+","+getY());
 	}
 
 	public void attack(Unit target, Weapon chosenWeapon) {

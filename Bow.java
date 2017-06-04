@@ -5,7 +5,7 @@
  */
 public class Bow extends Weapon {
 	private int accuracy;
-	Quiver arrows;
+	private Quiver arrows;
 	//This tests whether the shot is successful or not
 	//if the accuracy + any additons is less than that range, it will fail
 	//it has a higher percentage chance of success the closer you are/more additions you have
@@ -24,5 +24,13 @@ public class Bow extends Weapon {
 		*/
 		arrows = givenSet;
 		accuracy = a;
+	}
+
+	public Quiver getQuiver() {
+		return arrows;
+	}
+
+	public String toString() {
+		return (("BOW, "+arrows.getNumAvailable()+"/"+arrows.getMax()+", ACC "+accuracy));
 	}
 }

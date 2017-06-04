@@ -33,8 +33,8 @@ public abstract class Entity {
 		 * of checking if two entities are adjacent:
 		 * calculate rectangular distance, and if it equals one,
 		 * then they must be adjacent. */
-		int distance = ((getX() - x) + (getY() - y));
-		return ((distance == 1) || (distance == (-1)));
+		int distance = (Math.abs(getX()-x) + Math.abs(getY()-y));
+		return (distance == 1);
 		/*
 		return(x + 1 == this.getX() && y + 0 == this.getY() ||
 			   x - 1 == this.getX() && y + 0 == this.getY() ||
