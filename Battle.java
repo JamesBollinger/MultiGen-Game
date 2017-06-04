@@ -7,7 +7,7 @@
  */
 
 import java.util.ArrayList;
-import java.util.*;
+import java.util.Scanner;
 public class Battle {
 	//Every single object in the game, is made up of the enemies and friendlies arrayLists declared below
 	Unit[][] gameBoard;
