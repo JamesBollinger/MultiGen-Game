@@ -88,6 +88,8 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	//Enemy Array list
 	ArrayList<Unit> enemies;
 	ArrayList<Unit> moved;
+	/* Used for holding & dropping a unit: */
+	private Unit unitBeingHeld;
 
 	//The following represents the WIDTH/HEIGHT(game currently is square)
 	public int tilesX = 8;
@@ -118,6 +120,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 		moved = new ArrayList<Unit>();
 
 		gameBoard = new Unit[tilesY][tilesX];
+		unitBeingHeld = null;
 
 		/* A new approach to "placing units on the map":
 		 * what we need is a new function, to place these units.
@@ -194,11 +197,11 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 		terrainDefs[6] = (new ImageIcon("terrain/mountain.png")).getImage();
 	}
 
-	public synchronized int getState() {
+	public int getState() {
 		return state;
 	}
 
-	public synchronized void setState(int nextState) {
+	public void setState(int nextState) {
 		state = nextState;
 	}
 
@@ -225,8 +228,12 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 
 	//checks to see if a move is valid
 	private boolean moveTest(Unit selected, int x, int y){
-		if(x >= tilesX || y >= tilesY || x < 0 || y < 0)
+		if(x >= tilesX || y >= tilesY || x < 0 || y < 0) {
 			return false;
+		}
+		if (gameBoard[y][x] != null) {
+			return false;
+		}
 /*		* Now getting rid of this distance approach
 		* Since it does not factor in whether the destination
 		* is an ocean tile, etc.
@@ -737,6 +744,9 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	private boolean canDrop(Unit o) {
 		int xVal = o.getX();
 		int yVal = o.getY();
+		if (unitBeingHeld == null) {
+			return false;
+		}
 		if ((xVal > 0) &&
 			(gameBoard[yVal][xVal-1] == null) &&
 			(terrainMap[yVal][xVal-1] != 0)) {
