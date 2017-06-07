@@ -799,8 +799,8 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	}
 }
 
-public class TurnBasedSystem extends JFrame {
-	public TurnBasedSystem(ArrayList<Unit> sideA, ArrayList<Unit> sideB) {
+public class TurnBasedSystemFloatingMenu extends JFrame {
+	public TurnBasedSystemFloatingMenu(ArrayList<Unit> sideA, ArrayList<Unit> sideB) {
 		initUI(sideA, sideB);
 	}
 

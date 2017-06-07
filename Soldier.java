@@ -47,4 +47,9 @@ public class Soldier extends Unit {
 			}
 		}
 	}
+
+	public Unit getCopy() {
+		Soldier result = new Soldier(getX(), getY(), getTeam());
+		return result;
+	}
 }

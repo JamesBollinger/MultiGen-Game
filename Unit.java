@@ -39,7 +39,8 @@ public abstract class Unit extends Entity {
 	protected LinkedList<Item> inventory;
 	protected Weapon[] weapons;
 	protected int team; //0 for friendly, 1 for enemy, -1 for no team
-	boolean up = true;
+	private boolean up = true;
+	private Unit held;
 	/*
 
 	public Character(int x,int y,String img, int h, int s, int sp, int d, int ar,int ac, int i, int t){
@@ -123,11 +124,15 @@ public abstract class Unit extends Entity {
 		return (luckValue > Math.random());
 	}
 	public void dealDamage(int d, Unit attacker, int strength, int attackStrength, int critModifier) {
-		System.out.println(d);
 		if(applyCritical(attacker,critModifier)) {
-			health -= (d*2 + 0.4*(attackStrength+strength));		
+			int adjustedDamage = (d*2 + ((2*(attackStrength+strength)))/5);
+			health -= adjustedDamage;
+			System.out.printf("[CRITICAL HIT] "+attacker.toString()+" just hit "
+				+this.toString()+" for %d damage\n", adjustedDamage);
 		} else {
 			health -= d;
+			System.out.printf("[ORDINARY HIT] "+attacker.toString()+
+				" just hit "+this.toString()+" for %d damage\n", d);
 		}
 		checkUp();
 	}
@@ -162,6 +167,10 @@ public abstract class Unit extends Entity {
 	public int getStrength(){
 		return strength;
 	}
+	public Unit getHeld(){
+		return held;
+	}
+	public abstract Unit getCopy();
 	
 	//All of these values should be inputed as either a plus of minus to change it up or down
 	public void setStrength(int change){
@@ -169,6 +178,9 @@ public abstract class Unit extends Entity {
 	}
 	public void setSpeed(int change){
 		speed += change;	
+	}
+	public void setHeld(Unit otherUnit){
+		held = otherUnit;
 	}
 	public void setMagicalStrength(int change){
 		magicalStrength += change;	

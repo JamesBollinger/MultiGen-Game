@@ -1,5 +1,5 @@
+import java.util.ArrayList;
 
-import java.util.*;
 public class GraphicsThreadWithMenu implements Runnable {
 
 /*
@@ -15,7 +15,7 @@ public class GraphicsThreadWithMenu implements Runnable {
 	}
 
 	public void run() {
-		TurnBasedSystemWithHighlightedMenu manager = new TurnBasedSystemWithHighlightedMenu(savedFriendlyUnits, savedEnemyUnits);
+		TurnBasedSystemSideMenu manager = new TurnBasedSystemSideMenu(savedFriendlyUnits, savedEnemyUnits);
 		manager.setVisible(true);
 	}
 
