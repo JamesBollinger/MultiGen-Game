@@ -14,14 +14,13 @@ Seriously -- should we rename Character.java -> Unit.java ? I could do this, and
 
 Additional notes:
 
-The Weapon.java class contains the abstract method attack(), but it also contains a method called dealDamage(). Is this a redundant method? This is something to consider.
-
 Also, though this is marginally less important, we should reconsider the placement of println() statements. At the very least, if we include them for debugging / logging purposes, we should (i) have them all in one saved log file, or (ii) make them more descriptive to describe what unit is attacking / has just hit / missed, etc.
 
 ### Programs Developed so Far (these programs work!)
 *   ActionListenerDemo/GraphicsTest.java -- Produces a grid of random-colored tiles, and clicking transfers a tile's color to a different tile.
 *   ActionListenerDemo/GraphicsLines.java -- Produces a grid of random-colored tiles, and clicking refreshes the coloring.
-*   ./TurnBasedSystem.java (reborn from "TmpGraphics") -- manages moving a unit around the map. (Keeps track of player phase & enemy phase).
+*   TurnBasedSystemSideMenu.java -- the main "mid-level" layer that initiates the tactical map. Now functions with the inner-layer Combat system. (Keeps track of the player phase & enemy phase, units on the map, etc.)
+*   TurnBasedSystemFloatingMenu.java (reborn from "TmpGraphics") -- an older tactical map / graphical manager, in which the halt menu is designed to be 'floating' on top of the tactical map itself. Has temporarily been abandoned / superseded by the 'SideMenu' approach.
 
 ### Map Codes
 
