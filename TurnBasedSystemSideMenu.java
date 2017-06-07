@@ -48,7 +48,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	 * (right? Or at least, it will be set based on the biome in
 	 *  which the battle occurs).
 	 */
-	private final int MAP_CHOICES = 4;
+	private final int MAP_CHOICES = 8;
 
 	private final int NUM_HALT_OPTIONS = 8;
 
