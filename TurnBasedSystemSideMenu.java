@@ -1288,36 +1288,36 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 						int curX = highlighted.getX();
 						int curY = highlighted.getY();
 						menu.clear();
-						if ((curX >= 1)
-							&& (gameBoard[curY][curX-1] != null)
+						if ((curX > 0)
+							&& (gameBoard[curY][curX-1] == null)
 							&& (terrainMap[curY][curX-1] != 0)) {
-							Unit nextEne = gameBoard[curY][curX-1];
 							Point nextCorner = new Point(colPxl, rowPxl);
-							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
+							menu.add(new HaltMenuOption(nextCorner,
+								MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "@"+(curX-1)+","+curY, this));
 							rowPxl += (MENU_TILE_HEIGHT+1);
 						}
-						if ((curY >= 1)
-							&& (gameBoard[curY-1][curX] != null)
+						if ((curY > 0)
+							&& (gameBoard[curY-1][curX] == null)
 							&& (terrainMap[curY-1][curX] != 0)) {
-							Unit nextEne = gameBoard[curY-1][curX];
 							Point nextCorner = new Point(colPxl, rowPxl);
-							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
+							menu.add(new HaltMenuOption(nextCorner,
+								MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "@"+curX+","+(curY-1), this));
 							rowPxl += (MENU_TILE_HEIGHT+1);
 						}
-						if ((curX < tilesX)
+						if (((curX+1) < tilesX)
 							&& (gameBoard[curY][curX+1] == null)
 							&& (terrainMap[curY][curX+1] != 0)) {
-							Unit nextEne = gameBoard[curY][curX+1];
 							Point nextCorner = new Point(colPxl, rowPxl);
-							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
+							menu.add(new HaltMenuOption(nextCorner,
+								MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "@"+(curX+1)+","+curY, this));
 							rowPxl += (MENU_TILE_HEIGHT+1);
 						}
-						if ((curY < tilesY)
+						if (((curY+1) < tilesY)
 							&& (gameBoard[curY+1][curX] == null)
 							&& (terrainMap[curY+1][curX] != 0)) {
-							Unit nextEne = gameBoard[curY+1][curX];
 							Point nextCorner = new Point(colPxl, rowPxl);
-							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
+							menu.add(new HaltMenuOption(nextCorner,
+								MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "@"+curX+","+(curY+1), this));
 							rowPxl += (MENU_TILE_HEIGHT+1);
 						}
 						Point nextCorner = new Point(colPxl, rowPxl);
@@ -1487,6 +1487,11 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					for (int ind=0; ind < numPlayerUnits; ind++) {
 						if (gameBoard[objY][objX] == friendlies.get(ind)) {
 							friendlies.remove(ind);
+							if (moved.remove(gameBoard[objY][objX])) {
+								moved.add(toBeHeld);
+							} else {
+								moved.add(toBeHeld);
+							}
 							gameBoard[objY][objX] = null;
 							ind = numPlayerUnits;
 						}
@@ -1497,7 +1502,6 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					System.out.printf("unit-to-be-held 's new x: %d\n", highlighted.getHeld().getX());
 					System.out.printf("unit-to-be-held 's new x: %d\n", highlighted.getHeld().getY());
 */
-					moved.add(toBeHeld);
 /*					System.out.printf("Just added "+highlighted.toString()+" to the moved array\n");*/
 					endUnitTurn();
 				} else {
@@ -1512,6 +1516,9 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 				}
 			}
 		} else if (snapShotState == 12) {
+			/* This click corresponds to the user clicking
+			 * a location on which to drop the held unit.
+			 **/
 			if (xClick > WIDTH) {
 				int menuNum = (yClick / (MENU_TILE_HEIGHT+1));
 				if (menuNum < ((menu.size()-1))) {
@@ -1520,18 +1527,29 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					int locX = Integer.parseInt(
 						pairString.substring(0, pairString.indexOf(",")));
 					int locY = Integer.parseInt(
-						pairString.substring(1+pairString.indexOf(",")));
-					gameBoard[locY][locX] = highlighted.getHeld();
-					friendlies.add(highlighted.getHeld());
+						pairString.substring(1 + pairString.indexOf(",")));
+					/* EDIT: yes we do in fact need
+					 * to call the copy constructor here...
+					 * */
+					Unit heldCopy = (highlighted.getHeld()).getCopy();
+					gameBoard[locY][locX] = heldCopy;
+					heldCopy.setX(locX);
+					heldCopy.setY(locY);
+					for (int ind=0; ind < friendlies.size(); ind ++) {
+						Unit nextE = friendlies.get(ind);
+						if (nextE == highlighted.getHeld()) {
+							friendlies.remove(ind);
+							ind = friendlies.size();
+						}
+					}
+					friendlies.add(heldCopy);
 					highlighted.setHeld(null);
-					/* May have to call a copy constructor here?
-					 * To make sure that the game board unit still exists
-					 * after the setHeld(null)  is called.
-					 * 
-					 * Upon testing, it should be clear if this is needed
-					 */
+					/* Assuming a unit cannot do anything after dropping
+					 * another unit: */
+					endUnitTurn();
+					
 					/* may have to add the unit to "moved",
-					 * assuming that a dropped  unit cannot move
+					 * assuming that a dropped unit cannot move
 					 * further on the same turn.
 					 */
 				} else {
@@ -1541,7 +1559,6 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					 *
 					 * If no additional action is allowed, leave as is.
 					 * */
-					repaint();
 					endUnitTurn();
 				}
 			}
