@@ -21,7 +21,8 @@ Also, though this is marginally less important, we should reconsider the placeme
 ### Programs Developed so Far (these programs work!)
 *   ActionListenerDemo/GraphicsTest.java -- Produces a grid of random-colored tiles, and clicking transfers a tile's color to a different tile.
 *   ActionListenerDemo/GraphicsLines.java -- Produces a grid of random-colored tiles, and clicking refreshes the coloring.
-*   ./TurnBasedSystem.java (reborn from "TmpGraphics") -- manages moving a unit around the map. (Keeps track of player phase & enemy phase).
+*   TurnBasedSystemSideMenu.java -- the main "mid-level" layer that initiates the tactical map. Now functions with the inner-layer Combat system. (Keeps track of the player phase & enemy phase, units on the map, etc.)
+*   TurnBasedSystemFloatingMenu.java (reborn from "TmpGraphics") -- an older tactical map / graphical manager, in which the halt menu is designed to be 'floating' on top of the tactical map itself. Has temporarily been abandoned / superseded by the 'SideMenu' approach.
 
 ### Map Codes
 
