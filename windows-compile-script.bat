@@ -1,3 +1,4 @@
+echo off
 javac -cp . Battle.java
 javac -cp . Logger.java
 javac -cp . Entity.java

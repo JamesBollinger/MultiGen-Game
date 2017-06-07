@@ -101,7 +101,7 @@ public class Battle {
 	public Entity search(int p, int q){
 		for(int j = 0; j < entities.size(); j ++){
 			for(int i = 0; i < entities.get(j).size(); i++){
-				if(entities.get(j).get(i).x == p && entities.get(j).get(i).y == q && entities.get(j).get(i).up){
+				if(entities.get(j).get(i).x == p && entities.get(j).get(i).y == q && entities.get(j).get(i).isUp()){
 					return entities.get(j).get(i);
 				}
 			}
@@ -177,7 +177,7 @@ public class Battle {
 		boolean checkTeam1 = false;
 		for(int i = 0; i < tilesY; i++){
 			for(int j = 0; j < tilesX; j++){
-				if(recall(i,j) != null && recall(i,j).up){
+				if(recall(i,j) != null && recall(i,j).isUp()){
 					if(recall(i,j).team == 0){
 						checkTeam0 = true;	
 					}
