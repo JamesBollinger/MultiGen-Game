@@ -36,6 +36,7 @@ public class Archer extends Unit {
 		weapons[0] = bow;
 		name = ("Archer"+name.substring(4));
 	}
+	
 	//Used primarly for inconsole testing
 	public String toString(){
 		return (name+"@"+getX()+","+getY());
@@ -69,15 +70,19 @@ public class Archer extends Unit {
 					getStrength(),
 					chosenWeapon.getMaxDamage(),
 					0);
-/*				System.out.println("hit");*/
 			} else {
-/*				System.out.println("missed");*/
+				System.out.println("[MISS] "+this.toString()+"  shot an arrow and missed.");
 			}
 		} else if ((target.getTeam() == getTeam())) {
 			throw new UnsupportedOperationException("Inconsistency -- unit "+toString()+" is trying to target a teammate!");
 		} else {
 /*			System.out.println("Quiver of arrows is empty!");	*/
 		}
+	}
+
+	public Unit getCopy() {
+		Archer result = new Archer(getX(), getY(), getTeam());
+		return result;
 	}
 }
 

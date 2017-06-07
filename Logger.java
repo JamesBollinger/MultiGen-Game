@@ -43,7 +43,10 @@ public class Logger {
 		}
 	}
 
-	public void log(String msg) {
+	public void log(String msg, boolean verbose) {
 		output.println(msg);
+		if (verbose) {
+			System.out.println(msg);
+		}
 	}
 }

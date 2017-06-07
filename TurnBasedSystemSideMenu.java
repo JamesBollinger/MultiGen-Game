@@ -69,6 +69,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	private Unit highlighted, target;
 	private Weapon sWeapon;
 	private int currentTeam;
+	private int numPlayerUnitsPresent;
 	private int numMoved;
 	private HashMap<Unit, ArrayList<Weapon>> validWeaponsPerUnit;
 
@@ -87,17 +88,16 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	ArrayList<Unit> friendlies;
 	//Enemy Array list
 	ArrayList<Unit> enemies;
-	ArrayList<Unit> moved;
-	/* Used for holding & dropping a unit: */
-	private Unit unitBeingHeld;
+	/*ArrayList*/HashSet<Unit> moved;
 
 	//The following represents the WIDTH/HEIGHT(game currently is square)
 	public int tilesX = 8;
 	public int tilesY = 8;
 	private Timer enemyAIWatch;
 	private Timer animationWatch;
+	private Logger localLogger;
 
-	public TacticalMapWindow2(ArrayList<Unit> playerUnits, ArrayList<Unit> enemyUnits) {
+	public TacticalMapWindow2(ArrayList<Unit> playerUnits, ArrayList<Unit> enemyUnits, Logger l) {
 /*		entities = new ArrayList<Unit>();
 		entities.addAll(playerUnits);
 		entities.addAll(enemyUnits);*/
@@ -116,12 +116,12 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 		unitsImage = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
 
 		friendlies = playerUnits;
+		numPlayerUnitsPresent = friendlies.size();
 		enemies = enemyUnits;
-		moved = new ArrayList<Unit>();
+/*		moved = new ArrayList<Unit>();*/
+		moved = new HashSet<Unit>();
 
 		gameBoard = new Unit[tilesY][tilesX];
-		unitBeingHeld = null;
-
 		/* A new approach to "placing units on the map":
 		 * what we need is a new function, to place these units.
 		 * */
@@ -139,6 +139,8 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 		animationWatch.setInitialDelay(300);
 		animationWatch.setActionCommand("animationWatch");
 		animationWatch.start();
+
+		localLogger = l;
 	}
 
 	private void spawnUnits() {
@@ -197,7 +199,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 		terrainDefs[6] = (new ImageIcon("terrain/mountain.png")).getImage();
 	}
 
-	public int getState() {
+	private int getState() {
 		return state;
 	}
 
@@ -232,7 +234,9 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 			return false;
 		}
 		if (gameBoard[y][x] != null) {
-			return false;
+			if (gameBoard[y][x] != highlighted) {
+				return false;
+			}
 		}
 /*		* Now getting rid of this distance approach
 		* Since it does not factor in whether the destination
@@ -255,14 +259,14 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 			}
 		}
 		if(distance > selected.speed){
-			System.out.println("distance too far");
+			localLogger.log("distance too far", true);
 			return false;
 		}
 		if(recall(y,x) != null){
-			System.out.println("is occupied");
+			localLogger.log("is occupied", true);
 			return false;
 		}
-		//System.out.println("passed");
+		//localLogger.log("passed", true);
 */
 		/* */
 		if ((0 == terrainMap[y][x]) ||
@@ -319,7 +323,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 			for (int j = 0; j < TILE_SIZE; j ++) {
 /*
 				if ((i == 0) && (j == 0)) {
-					System.out.println("\tpixel has been colored " + color);
+					localLogger.log("\tpixel has been colored "+color, true);
 				}
 */
 				terrainImage[layer].setRGB(r+i, s+j, color);
@@ -348,11 +352,11 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	 * **/
 	public void drawTeamPhaseMessage(Graphics k, int num) {
 		Graphics2D kAs2D = (Graphics2D) k;
-/*		System.out.println("Just converted graphics obj, about to switch/case on the team code");*/
+/*		localLogger.log("Just converted graphics obj, about to switch/case on the team code", true);*/
 		if (num == 0) {
-/*			System.out.println("PLAYER PHASE about to type it up");*/
+/*			localLogger.log("PLAYER PHASE about to type it up", true);*/
 			kAs2D.drawString("PLAYER PHASE", 5, 15);
-/*			System.out.println("That took too long.");*/
+/*			localLogger.log("That took too long.", true);*/
 		} else if (num == 1) {
 			kAs2D.drawString("ENEMY PHASE", 5, 15);
 		} else if (num == 2) {
@@ -379,7 +383,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 			reader.close();
 			regenMap = false;
 		} catch (FileNotFoundException j) {
-			System.out.println("ERR -- image file not found");
+			localLogger.log("ERR -- image file not found", true);
 			j.printStackTrace();
 		}
 
@@ -424,9 +428,9 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
  * (the final layer is treated separately, as a menu layer
  * */
 		for (int ind=0; ind < 2; ind ++) {
-/*			System.out.println("About to paint layer " + ind + " of the terrain image.");*/
+/*			localLogger.log("About to paint layer " + ind + " of the terrain image.", true);*/
 			if (terrainImage[ind] == null) {
-/*				System.out.println("\tERR -- it's null!");*/
+/*				localLogger.log("\tERR -- it's null!", true);*/
 			} else {
 				kAs2D.drawImage(terrainImage[ind], null, 0, 0);
 			}
@@ -445,7 +449,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	}
 
 	public void drawMenu(Graphics renderer) {
-		System.out.println("now about to draw the menu on screen");
+/*		localLogger.log("now about to draw the menu on screen", true);*/
 		Graphics2D rend2d = (Graphics2D) renderer;
 		int numHaltOptions = menu.size();
 
@@ -594,7 +598,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					getEnemiesInRange(range-1, xCoord, yCoord-1, weapons, xSrc, ySrc);
 					getEnemiesInRange(range-1, xCoord, yCoord+1, weapons, xSrc, ySrc);
 				} else { 
-/*					System.out.println("\tFunky case -- the unit is not null, but its team, "+nextUnit.getTeam()+" is not 1 [range="+range+"]");*/
+/*					localLogger.log("\tFunky case -- the unit is not null, but its team, "+nextUnit.getTeam()+" is not 1 [range="+range+"]", true);*/
 					getEnemiesInRange(range-1, xCoord-1, yCoord, weapons, xSrc, ySrc);
 					getEnemiesInRange(range-1, xCoord+1, yCoord, weapons, xSrc, ySrc);
 					getEnemiesInRange(range-1, xCoord, yCoord-1, weapons, xSrc, ySrc);
@@ -619,10 +623,10 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 /*				if (terrainMap[yCoord][xCoord] == 0) {
 				} else*/
 				if (nextUnit == null) {
-//					System.out.println("\tNO enemy unit is found at ("+yCoord+","+xCoord+") [range==0]");
+//					localLogger.log("\tNO enemy unit is found at ("+yCoord+","+xCoord+") [range==0]", true);
 					/* no-op... */
 				} else if (nextUnit.getTeam() == 1) {
-//					System.out.println("\tEnemy unit is found at ("+yCoord+","+xCoord+")! [range="+range+"]");
+//					localLogger.log("\tEnemy unit is found at ("+yCoord+","+xCoord+")! [range="+range+"]", true);
 //					colorSquare(1, xCoord*TILE_SIZE, yCoord*TILE_SIZE, -1387614848);
 					inRange.add(nextUnit);
 					ArrayList<Weapon> validWeapons = new ArrayList<Weapon>();
@@ -632,20 +636,20 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					}
 					validWeaponsPerUnit.put(nextUnit, validWeapons);
 				} else { 
-/*					System.out.println("\tFunky case -- the unit is not null, but its team, "+nextUnit.getTeam()+" is not 1 [range="+range+"]");*/
+/*					localLogger.log("\tFunky case -- the unit is not null, but its team, "+nextUnit.getTeam()+" is not 1 [range="+range+"]", true);*/
 				}
 			} else {
 /*				if (terrainMap[yCoord][xCoord] == 0) {
 					// No-op
 				} else*/
 				if (nextUnit == null) {
-					System.out.println("\tNO enemy unit is found at ("+yCoord+","+xCoord+") [range="+range+"]");
+					localLogger.log("\tNO enemy unit is found at ("+yCoord+","+xCoord+") [range="+range+"]", true);
 					getEnemiesInRangeOneWeapon(range-1, xCoord-1, yCoord, onlyWeapon, xSrc, ySrc);
 					getEnemiesInRangeOneWeapon(range-1, xCoord+1, yCoord, onlyWeapon, xSrc, ySrc);
 					getEnemiesInRangeOneWeapon(range-1, xCoord, yCoord-1, onlyWeapon, xSrc, ySrc);
 					getEnemiesInRangeOneWeapon(range-1, xCoord, yCoord+1, onlyWeapon, xSrc, ySrc);
 				} else if (nextUnit.getTeam() == 1) {
-					System.out.println("\tEnemy unit is found at ("+yCoord+","+xCoord+")! [range="+range+"]");
+					localLogger.log("\tEnemy unit is found at ("+yCoord+","+xCoord+")! [range="+range+"]", true);
 //					colorSquare(1, xCoord*TILE_SIZE, yCoord*TILE_SIZE, -1387614848);
 					inRange.add(nextUnit);
 					ArrayList<Weapon> validWeapons = new ArrayList<Weapon>();
@@ -659,7 +663,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					getEnemiesInRangeOneWeapon(range-1, xCoord, yCoord-1, onlyWeapon, xSrc, ySrc);
 					getEnemiesInRangeOneWeapon(range-1, xCoord, yCoord+1, onlyWeapon, xSrc, ySrc);
 				} else { 
-/*					System.out.println("\tFunky case -- the unit is not null, but its team, "+nextUnit.getTeam()+" is not 1 [range="+range+"]");*/
+/*					localLogger.log("\tFunky case -- the unit is not null, but its team, "+nextUnit.getTeam()+" is not 1 [range="+range+"]", true);*/
 					getEnemiesInRangeOneWeapon(range-1, xCoord-1, yCoord, onlyWeapon, xSrc, ySrc);
 					getEnemiesInRangeOneWeapon(range-1, xCoord+1, yCoord, onlyWeapon, xSrc, ySrc);
 					getEnemiesInRangeOneWeapon(range-1, xCoord, yCoord-1, onlyWeapon, xSrc, ySrc);
@@ -667,7 +671,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 				}
 			}
 		} else {
-			System.out.println("OUT OF RANGE -- xCoord  ("+xCoord+") and yCoord ("+yCoord+") are somehow not valid");
+			localLogger.log("OUT OF RANGE -- xCoord  ("+xCoord+") and yCoord ("+yCoord+") are somehow not valid", true);
 		}
 	}
 
@@ -697,25 +701,28 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 		}
 		inRange.clear();
 		validWeaponsPerUnit.clear();
-		System.out.println("numWeapons == "+numWeapons+"; maxRange == "+initRange);
+		localLogger.log("numWeapons == "+numWeapons+"; maxRange == "+initRange, true);
 		if (numWeapons < 1) {
 			return false;
 		} else if (numWeapons > 1) { // oh boy. have to process all these possible weapons.
 			/*inRange = */getEnemiesInRange(initRange, xVal, yVal, allWeaponChoices, o.getX(), o.getY());
-			System.out.println("inRange: "+inRange.toString());
-			System.out.println("hashMap for each enemy in range: "+validWeaponsPerUnit.toString());
+			localLogger.log("inRange: "+inRange.toString(), true);
+			localLogger.log("hashMap for each enemy in range: "+validWeaponsPerUnit.toString(), true);
 			return (inRange.size() > 0);
 		} else { // only one weapon! yay
-			System.out.println("weapon chosen: "+(allWeaponChoices[0]!=null));
+			localLogger.log("weapon chosen: "+(allWeaponChoices[0]!=null), true);
 			/*inRange = */getEnemiesInRangeOneWeapon(initRange, xVal, yVal, allWeaponChoices[0], o.getX(), o.getY());
-			System.out.println("Should have justed printed out a bunch of indented info about surrounding units");
-			System.out.println("inRange: "+inRange.toString());
-			System.out.println("hashMap for each enemy in range: "+validWeaponsPerUnit.toString());
+			localLogger.log("Should have justed printed out a bunch of indented info about surrounding units", true);
+			localLogger.log("inRange: "+inRange.toString(), true);
+			localLogger.log("hashMap for each enemy in range: "+validWeaponsPerUnit.toString(), true);
 			return (inRange.size() > 0);
 		}
 	}
 
 	private boolean canRescue(Unit o) {
+		if (o.getHeld() != null) {
+			return false;
+		}
 		int xVal = o.getX();
 		int yVal = o.getY();
 		if ((xVal > 0) &&
@@ -744,7 +751,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	private boolean canDrop(Unit o) {
 		int xVal = o.getX();
 		int yVal = o.getY();
-		if (unitBeingHeld == null) {
+		if (o.getHeld() == null) {
 			return false;
 		}
 		if ((xVal > 0) &&
@@ -873,12 +880,12 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 		int rowPxl = 1;
 		int colPxl = WIDTH+1;
 		if (canAttack(o)) {
-//			System.out.println("UNIT CAN ATTACK");
+//			localLogger.log("UNIT CAN ATTACK", true);
 			Point nextCorner = new Point(colPxl, rowPxl);
 			menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Attack", this));
 			rowPxl += (MENU_TILE_HEIGHT+1);
 		} else {
-//			System.out.println("UNIT CANNOT ATTACK");
+//			localLogger.log("UNIT CANNOT ATTACK", true);
 		}
 		if (o.hasItem()) {
 			Point nextCorner = new Point(colPxl, rowPxl);
@@ -918,9 +925,10 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 
 	private boolean allUnitsMoved() {
 		if (currentTeam == 0) {
-			if (moved.size() != friendlies.size()) {
+			if (moved.size() != numPlayerUnitsPresent/*friendlies.size()*/) {
 				return false;
 			}
+			System.out.printf("%d units have moved, of %d total player units\n", moved.size(), friendlies.size());
 			return true;
 /*
 			for (int ind = 0; ind < friendlies.size(); ind ++) {
@@ -940,8 +948,10 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	}
 
 	private boolean hasMoved(Unit x) {
-		for (int i = 0; i < moved.size();  i++) {
-			if (x == moved.get(i)) {
+		Iterator<Unit> movedAlready = moved.iterator();
+		while (movedAlready.hasNext()) {
+			Unit actualHasMoved = movedAlready.next();
+			if (x == actualHasMoved) {
 				return true;
 			}
 		}
@@ -956,22 +966,22 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	 * purpose
 	 * */
 		super.paintComponent(gm);
-/*		System.out.println("\tabout to draw board");*/
+/*		localLogger.log("\tabout to draw board", true);*/
 		drawBoard(gm);
-/*		System.out.println("\tabout to draw icons");*/
+/*		localLogger.log("\tabout to draw icons", true);*/
 		drawIcons(gm);
-/*		System.out.println("\tabout to draw team phase message");*/
+/*		localLogger.log("\tabout to draw team phase message", true);*/
 		drawTeamPhaseMessage(gm, currentTeam);
 		if (showMenu) {
 			drawMenu(gm);
 		}
 /*		inRange.clear();*/
-/*		System.out.println("\tabout to finish drawing :P");*/
+/*		localLogger.log("\tabout to finish drawing :P", true);*/
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent ev) {
-/*		System.out.println("TIMER WENT OFF JUST NOW!");*/
+/*		localLogger.log("TIMER WENT OFF JUST NOW!", true);*/
 		String type = ev.getActionCommand();
 		if (type.equals("enemyAIWatch")) {
 			/* First, process the enemy AI if it is needed. */
@@ -982,14 +992,14 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					Unit nextEn = enemies.get(enemyInd);
 					EnemyAI mind = new EnemyAI(gameBoard, terrainMap, nextEn);
 					EnemyMove res = mind.decide();
-					System.out.println(res.toString());
+					localLogger.log(res.toString(), true);
 
 					/* Now execute the EnemyMove action */
 					Point recvDest = res.getDestination();
 					Point recvTar = res.getTarget();
 					int recvAct = res.getAction();
 					if (res.getDestination() == null) {
-						System.out.println("Error -- destination Point is null. Treating this as \"no movement\"");
+						localLogger.log("Error -- destination Point is null. Treating this as \"no movement\"", true);
 					} else {
 						int recvX = (int)(res.getDestination().getX());
 						int recvY = (int)(res.getDestination().getY());
@@ -997,10 +1007,11 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 						moveStatus = moveEnemy(nextEn, recvX, recvY);
 						if (moveStatus) {
 							moved.add(nextEn);
+/*							System.out.printf("Just added the ENEMY unit to the moved array\n");*/
 						} else {
-							System.out.println("ERROR IN MOVING ENEMY "
+							localLogger.log("ERROR IN MOVING ENEMY "
 							+ nextEn.toString() + " TO THE LOCATION (" +
-							recvX + ", " + recvY + ")");
+							recvX + ", " + recvY + ")", true);
 						}
 
 					}
@@ -1011,7 +1022,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					 * */
 					switch (recvAct) {
 						case 0:
-							System.out.println("Enemy unit " + enemyInd + " will wait.");
+							localLogger.log("Enemy unit " + enemyInd + " will wait.", true);
 							break;
 						case 1:
 							
@@ -1042,7 +1053,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					try {
 						Thread.sleep(500);
 					} catch (InterruptedException j) {
-						System.out.println("ERR -- Thread interrupted. Cannot sleep. Whoops.");
+						localLogger.log("ERR -- Thread interrupted. Cannot sleep. Whoops.", true);
 						j.printStackTrace();
 					}
 				}
@@ -1061,15 +1072,23 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 	private void endUnitTurn() {
 		/* Finalize the move */
 		moved.add(highlighted);
+		for (int index=0; index < friendlies.size(); index ++) {
+			Unit nextPlayerUnit = friendlies.get(index);
+			if (nextPlayerUnit.getHeld() != null) {
+				moved.add(nextPlayerUnit.getHeld());
+			}
+		}
+/*		System.out.printf("Just added "+highlighted.toString()+" to the moved array\n");*/
 		if (allUnitsMoved()) {
 			currentTeam ++;
 			currentTeam %= NUM_SIDES;
 			moved.clear();
 		} else {
-			System.out.println("Not all player units have moved, apparently.");
+			localLogger.log("Not all player units have moved, apparently.", true);
 		}
 		repaint();
 		setState(0);
+		localLogger.log("[state change]   -> 0", true);
 	}
 
 	@Override
@@ -1079,7 +1098,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 		int xInd = (xClick / TILE_SIZE);
 		int yInd = (yClick / TILE_SIZE);
 /*
-		System.out.println("Mouse click occurred at (" + xClick + ", " + yClick + ").");
+		localLogger.log("Mouse click occurred at (" + xClick + ", " + yClick + ").", true);
 */
 		int snapShotState = getState();
 		if (snapShotState == 0) {
@@ -1089,19 +1108,23 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 			}
 			if (gameBoard[yInd][xInd] != null) {
 				highlighted = gameBoard[yInd][xInd];
+			} else {
+				localLogger.log("player tried to select an empty square", true);
+				return;
 			}
 			if ((highlighted.getTeam() != 0) ||
 			    (hasMoved(highlighted))) {
-				System.out.println("cannot move that unit.");
+				localLogger.log("cannot move that unit.", true);
 			} else {
 				if (highlighted != null) {
 					setState(1);
-/*					System.out.println("Set state to 1 upon that click you just made!");*/
+					localLogger.log("[state change] 0 -> 1", true);
+/*					localLogger.log("Set state to 1 upon that click you just made!", true);*/
 					terrainImage[1] = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
-/*					System.out.println("Initialized a new BufferedImage at index 1 of the terrain array!");
-					System.out.println("showMoveRange() about to be called, at col = " + xInd + ", row = " + yInd);*/
+/*					localLogger.log("Initialized a new BufferedImage at index 1 of the terrain array!", true);
+					localLogger.log("showMoveRange() about to be called, at col = "+xInd+", row = "+yInd, true);*/
 					showMoveRange(highlighted.getSpeed(), xInd, yInd);
-/*					System.out.println("Prepared the image of MOVE RANGE ahead of time");*/
+/*					localLogger.log("Prepared the image of MOVE RANGE ahead of time", true);*/
 					repaint();
 				} else {
 					/* Terrain selected at this point! */
@@ -1119,6 +1142,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 			repaint();
 			snapShotState = 2;
 			setState(2);
+			localLogger.log("[state change] 1 -> 2", true);
 		}
 		/* Idea: probably change this to an if, or better yet, 
 		 * a switch/case structure...
@@ -1130,6 +1154,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 //			snapShotState = getState();
 			repaint();
 			setState(3);
+			localLogger.log("[state change] 2 -> 3", true);
 			snapShotState = 3;
 		}
 		if (snapShotState == 3) {
@@ -1139,6 +1164,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 				terrainImage[1] = null;
 				repaint();
 				setState(4);
+				localLogger.log("[state change] 3 -> 4", true);
 				snapShotState = 4;
 			}
 		}
@@ -1153,6 +1179,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 			makeHaltMenu(highlighted, xClick, yClick);
 			repaint();
 			setState(5);
+			localLogger.log("[state change] 4 -> 5", true);
 		} else if (snapShotState == 5) {
 			/* User just clicked on SOMETHING
 			 * that was part of the halt menu */
@@ -1171,7 +1198,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					if (choice.equals("Attack")) {
 						// We wish to display a new menu,
 						// but not using the same makeMenu() method as before...
-						// this is a simpler custom menu, so: create it right here
+						// this is a simpler custom menu, so create it right here
 						int colPxl = (WIDTH+1);
 						int rowPxl = 1;
 						menu.clear();
@@ -1187,32 +1214,127 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 							MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Skip", this));
 						repaint();
 						setState(6);
+						localLogger.log("[state change] 5 -> 6", true);
 					} else if (choice.equals("Item")) {
 						/* IN DEVELOPMENT */
 						repaint();
 						setState(0);
+						localLogger.log("[state change]   -> 0", true);
 					} else if (choice.equals("Trade")) {
 						/* IN DEVELOPMENT */
 						repaint();
 						setState(0);
+						localLogger.log("[state change]   -> 0", true);
 					} else if (choice.equals("Rescue")) {
-						/* IN DEVELOPMENT */
+						/* *
+						 * Add each surrounding
+						 * Unit to the menu
+						 * and thus allow the user to choose a unit.
+						 * */
+						
+						int colPxl = (WIDTH+1);
+						int rowPxl = 1;
+						int curX = highlighted.getX();
+						int curY = highlighted.getY();
+						menu.clear();
+						if ((curX >= 1)
+							&& (gameBoard[curY][curX-1] != null)
+							&& (gameBoard[curY][curX-1].getTeam() == 0)
+							&& (gameBoard[curY][curX-1].getHeld() == null)) {
+							Unit nextEne = gameBoard[curY][curX-1];
+							Point nextCorner = new Point(colPxl, rowPxl);
+							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
+							rowPxl += (MENU_TILE_HEIGHT+1);
+						}
+						if ((curY >= 1)
+							&& (gameBoard[curY-1][curX] != null)
+							&& (gameBoard[curY-1][curX].getTeam() == 0)
+							&& (gameBoard[curY-1][curX].getHeld() == null)) {
+							Unit nextEne = gameBoard[curY-1][curX];
+							Point nextCorner = new Point(colPxl, rowPxl);
+							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
+							rowPxl += (MENU_TILE_HEIGHT+1);
+						}
+						if ((curX < tilesX)
+							&& (gameBoard[curY][curX+1] != null)
+							&& (gameBoard[curY][curX+1].getTeam() == 0)
+							&& (gameBoard[curY][curX+1].getHeld() == null)) {
+							Unit nextEne = gameBoard[curY][curX+1];
+							Point nextCorner = new Point(colPxl, rowPxl);
+							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
+							rowPxl += (MENU_TILE_HEIGHT+1);
+						}
+						if ((curY < tilesY)
+							&& (gameBoard[curY+1][curX] != null)
+							&& (gameBoard[curY+1][curX].getTeam() == 0)
+							&& (gameBoard[curY+1][curX].getHeld() == null)) {
+							Unit nextEne = gameBoard[curY+1][curX];
+							Point nextCorner = new Point(colPxl, rowPxl);
+							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
+							rowPxl += (MENU_TILE_HEIGHT+1);
+						}
+						Point nextCorner = new Point(colPxl, rowPxl);
+						menu.add(new HaltMenuOption(nextCorner,
+							MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Back", this));
 						repaint();
-						setState(0);
+						setState(11);
+						localLogger.log("[state change] 5 -> 11", true);
 					} else if (choice.equals("Drop")) {
-						/* IN DEVELOPMENT */
+						/* Look for a valid square
+						 * on which to set the held unit.
+						 * */
+						int colPxl = (WIDTH+1);
+						int rowPxl = 1;
+						int curX = highlighted.getX();
+						int curY = highlighted.getY();
+						menu.clear();
+						if ((curX >= 1)
+							&& (gameBoard[curY][curX-1] != null)
+							&& (terrainMap[curY][curX-1] != 0)) {
+							Unit nextEne = gameBoard[curY][curX-1];
+							Point nextCorner = new Point(colPxl, rowPxl);
+							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
+							rowPxl += (MENU_TILE_HEIGHT+1);
+						}
+						if ((curY >= 1)
+							&& (gameBoard[curY-1][curX] != null)
+							&& (terrainMap[curY-1][curX] != 0)) {
+							Unit nextEne = gameBoard[curY-1][curX];
+							Point nextCorner = new Point(colPxl, rowPxl);
+							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
+							rowPxl += (MENU_TILE_HEIGHT+1);
+						}
+						if ((curX < tilesX)
+							&& (gameBoard[curY][curX+1] == null)
+							&& (terrainMap[curY][curX+1] != 0)) {
+							Unit nextEne = gameBoard[curY][curX+1];
+							Point nextCorner = new Point(colPxl, rowPxl);
+							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
+							rowPxl += (MENU_TILE_HEIGHT+1);
+						}
+						if ((curY < tilesY)
+							&& (gameBoard[curY+1][curX] == null)
+							&& (terrainMap[curY+1][curX] != 0)) {
+							Unit nextEne = gameBoard[curY+1][curX];
+							Point nextCorner = new Point(colPxl, rowPxl);
+							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextEne.toString(), this));
+							rowPxl += (MENU_TILE_HEIGHT+1);
+						}
+						Point nextCorner = new Point(colPxl, rowPxl);
+						menu.add(new HaltMenuOption(nextCorner,
+							MENU_TILE_HEIGHT, MENU_TILE_WIDTH, "Back", this));
 						repaint();
-						setState(0);
+						setState(12);
+						localLogger.log("[state change] 5? -> 12", true);
 					} else if (choice.equals("Pass")) {
 						/* IN DEVELOPMENT */
-						repaint();
-						setState(0);
+						endUnitTurn();
 					} else if (choice.equals("Ability")) {
 						/* IN DEVELOPMENT */
 						repaint();
 						setState(0);
 					} else {
-						System.out.println("Cannot identify the menu choice "+choice+".");
+						localLogger.log("Cannot identify the menu choice "+choice+".", true);
 						throw new UnsupportedOperationException();
 					}
 				}
@@ -1227,6 +1349,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					showMenu = true;
 					repaint();
 					setState(5);
+					localLogger.log("[state change] 6 -> 5", true);
 				} else {
 					/* List all valid weapons in the menu */
 					
@@ -1247,7 +1370,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 						Weapon nextChoice = allChoices[ind];
 						if ((nextChoice != null) && 
 							(nextChoice.getRange() < actualDist)) {
-							System.out.println("adding weapon choice");
+							localLogger.log("adding weapon choice", true);
 							Point nextCorner = new Point(colPxl, rowPxl);
 							menu.add(new HaltMenuOption(nextCorner, MENU_TILE_HEIGHT, MENU_TILE_WIDTH, nextChoice.toString(), this));
 							rowPxl += (MENU_TILE_HEIGHT+1);
@@ -1260,6 +1383,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					showMenu = true;
 					repaint();
 					setState(7);
+					localLogger.log("[state change] 6 -> 7", true);
 				}
 				
 			}
@@ -1287,6 +1411,7 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 					showMenu = true;
 					repaint();
 					setState(6);
+					localLogger.log("[state change] 7 -> 6", true);
 				} else {
 					/* process attacking a single enemy unit */
 					sWeapon = highlighted.getWeapons()[menuNum];
@@ -1343,37 +1468,116 @@ class TacticalMapWindow2 extends JPanel implements MouseListener, ActionListener
 			}
 			repaint();
 			setState(0);
-		}*/
+		}*/ else if (snapShotState == 11) {
+			
+			if (xClick > WIDTH) {
+				int menuNum = (yClick / (MENU_TILE_HEIGHT+1));
+				if (menuNum < ((menu.size()-1))) {
+					String fullName = menu.get(menuNum).getText();
+					String pairString = fullName.substring(1+fullName.indexOf("@"));
+					int objX = Integer.parseInt(
+						pairString.substring(0, pairString.indexOf(",")));
+					int objY = Integer.parseInt(
+						pairString.substring(1+pairString.indexOf(",")));
+					Unit toBeHeld = (gameBoard[objY][objX]).getCopy();
+					toBeHeld.setX(highlighted.getX());
+					toBeHeld.setY(highlighted.getY());
+					highlighted.setHeld(toBeHeld);
+					int numPlayerUnits = friendlies.size();
+					for (int ind=0; ind < numPlayerUnits; ind++) {
+						if (gameBoard[objY][objX] == friendlies.get(ind)) {
+							friendlies.remove(ind);
+							gameBoard[objY][objX] = null;
+							ind = numPlayerUnits;
+						}
+					}
+/*
+					System.out.printf("highlighted's final x value: %d\n", highlighted.getX());
+					System.out.printf("highlighted's final y value: %d\n", highlighted.getY());
+					System.out.printf("unit-to-be-held 's new x: %d\n", highlighted.getHeld().getX());
+					System.out.printf("unit-to-be-held 's new x: %d\n", highlighted.getHeld().getY());
+*/
+					moved.add(toBeHeld);
+/*					System.out.printf("Just added "+highlighted.toString()+" to the moved array\n");*/
+					endUnitTurn();
+				} else {
+					/* "GO BACK INTO YOUR ROOM" */
+					/* No seriously,
+					 * go back to the halt menu.
+					 * */
+					makeHaltMenu(highlighted, xClick, yClick);
+					repaint();
+					setState(5);
+					localLogger.log("[state change] 11 -> 5", true);
+				}
+			}
+		} else if (snapShotState == 12) {
+			if (xClick > WIDTH) {
+				int menuNum = (yClick / (MENU_TILE_HEIGHT+1));
+				if (menuNum < ((menu.size()-1))) {
+					String fullName = menu.get(menuNum).getText();
+					String pairString = fullName.substring(1+fullName.indexOf("@"));
+					int locX = Integer.parseInt(
+						pairString.substring(0, pairString.indexOf(",")));
+					int locY = Integer.parseInt(
+						pairString.substring(1+pairString.indexOf(",")));
+					gameBoard[locY][locX] = highlighted.getHeld();
+					friendlies.add(highlighted.getHeld());
+					highlighted.setHeld(null);
+					/* May have to call a copy constructor here?
+					 * To make sure that the game board unit still exists
+					 * after the setHeld(null)  is called.
+					 * 
+					 * Upon testing, it should be clear if this is needed
+					 */
+					/* may have to add the unit to "moved",
+					 * assuming that a dropped  unit cannot move
+					 * further on the same turn.
+					 */
+				} else {
+					/* TODO: Determine if we 
+					 * allow the player to perform more actions
+					 * with this unit after dropping another unit
+					 *
+					 * If no additional action is allowed, leave as is.
+					 * */
+					repaint();
+					endUnitTurn();
+				}
+			}
+			
+		}
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent ev) {
-/*		System.out.println("mouse has been released.");*/
+/*		localLogger.log("mouse has been released.", true);*/
 	}
 
 	@Override
 	public void mousePressed(MouseEvent ev) {
-/*		System.out.println("mouse has been pressed down.");  */
+/*		localLogger.log("mouse has been pressed down.", true);*/
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent ev) {
-/*		System.out.println("mouse has entered the window.")  */
+/*		localLogger.log("mouse has entered the window.", true);*/
 	}
 
 	@Override
 	public void mouseExited(MouseEvent ev) {
-/*		System.out.println("You seem to have stopped paying attention to the game. Are you alright? :P");  */
+/*		localLogger.log("You seem to have stopped paying attention to the game. Are you alright? :P", true);*/
 	}
 }
 
-public class TurnBasedSystemWithHighlightedMenu extends JFrame {
-	public TurnBasedSystemWithHighlightedMenu(ArrayList<Unit> sideA, ArrayList<Unit> sideB) {
+public class TurnBasedSystemSideMenu extends JFrame {
+	public TurnBasedSystemSideMenu(ArrayList<Unit> sideA, ArrayList<Unit> sideB) {
 		initUI(sideA, sideB);
 	}
 
 	private void initUI(ArrayList<Unit> ally, ArrayList<Unit> opponent) {
-		TacticalMapWindow2 allGraphics = new TacticalMapWindow2(ally, opponent);
+		Logger graphicsLog = new Logger("log.txt");
+		TacticalMapWindow2 allGraphics = new TacticalMapWindow2(ally, opponent, graphicsLog);
 		add(allGraphics);
 		setTitle("Mid-Level Simulation");
 		setSize(880, 720);

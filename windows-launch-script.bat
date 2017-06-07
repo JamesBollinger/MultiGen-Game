@@ -1,4 +1,4 @@
 java -version
-java -cp . TurnBasedSystemWithHighlightedMenu
+java -cp . TurnBasedSystemSideMenu
 echo "Game finished."
 pause

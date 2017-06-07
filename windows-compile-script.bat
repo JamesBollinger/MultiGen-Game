@@ -1,4 +1,5 @@
 javac -cp . Battle.java
+javac -cp . Logger.java
 javac -cp . Entity.java
 javac -cp . Unit.java
 javac -cp . Archer.java
@@ -10,7 +11,7 @@ javac -cp . Sword.java
 javac -cp . Quiver.java
 javac -cp . Bow.java
 javac -cp . GraphicsThreadWithMenu.java
-javac -cp . Logger.java
 javac -cp . Item.java
+javac -cp . TurnBasedSystemSideMenu.java
 echo "Compilation finished."
 pause
