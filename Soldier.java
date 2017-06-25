@@ -10,7 +10,7 @@ public class Soldier extends Unit {
 		int imgIndex = (int) (Math.random()*5);
 		String imgSrc = new String("\"artwork\"/nic-cage-" + imgIndex + ".jpg");
 */
-		super(x,y,"\"artwork\"/nic-cage-"+((int)(Math.random()*5))+".jpg",10,5,
+		super(x,y,Logger.root_dir+"nic-cage-"+((int)(Math.random()*5))+".jpg",10,5,
 			/*magical strength=*/ 1,
 			/*hit speed=*/ 10,
 			/*speed*/ 6,
@@ -25,13 +25,31 @@ public class Soldier extends Unit {
 	}
 
 	public String toString(){
-		return "S";
+		return ("Soldier(Team "+team+"):HP "+health+";SPD "+speed+";ACC "+accuracy+"@"+getX()+","+getY());
 	}
 
-	public void attack(Unit target){
-/*		System.out.println(checkAdjacent(target.x,target.y));*/
-		if(checkAdjacent(target.x,target.y) && target.team != this.team){
-			sword.attack(this, target);
+	public void attack(Unit target, Weapon chosenWeapon) {
+/*		System.out.println(checkAdjacent(target.getX(),target.getY()));*/
+		if(checkAdjacent(target.getX(),target.getY()) && target.team != this.team){
+			if(Weapon.dodgeTest(this, target)){
+				int armourDifference = chosenWeapon.getAP()-target.getArmour();
+				if(armourDifference > 0) armourDifference = 0;
+				target.dealDamage(
+					((int)(Math.random()*(chosenWeapon.getMaxDamage()-
+						chosenWeapon.getMinDamage()))
+						+ chosenWeapon.getMinDamage()
+						- armourDifference),
+					this,
+					getStrength(),
+					chosenWeapon.getMaxDamage(),
+					0);
+/*				System.out.println("hit");*/
+			}
 		}
+	}
+
+	public Unit getCopy() {
+		Soldier result = new Soldier(getX(), getY(), getTeam());
+		return result;
 	}
 }

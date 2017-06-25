@@ -182,7 +182,7 @@ public class EnemyAI {
 			}
 		} else {
 			/* No need to retreat.... yet. */
-			System.out.println("\t\"My life for Auir!\"");
+			System.out.println("\t\"My life for Aiur!\"");
 			Point destination = eagerTravelNW();
 			EnemyMove attack = new EnemyMove(destination, null, 0);
 			return attack;

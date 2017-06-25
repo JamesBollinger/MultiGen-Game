@@ -13,12 +13,12 @@ public class HaltMenuOption extends JComponent {
 	private int height;
 	private int width;
 	private String text;
-	private TacticalMapWindow master;
+	private TacticalMapWindow2 master;
 	private int color;
 	private BufferedImage visual;
 
 	public HaltMenuOption(Point givenCorner, int ndy, int ndx,
-				String option, TacticalMapWindow manager) {
+				String option, TacticalMapWindow2 manager) {
 		upperLeftCorner = givenCorner;
 		height = ndy;
 		width = ndx;

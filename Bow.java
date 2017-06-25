@@ -4,20 +4,13 @@
  * is sub-class of the weapon class
  */
 public class Bow extends Weapon {
-	int accuracy;
-	Arrow arrows;
+	private int accuracy;
+	private Quiver arrows;
 	//This tests whether the shot is successful or not
 	//if the accuracy + any additons is less than that range, it will fail
 	//it has a higher percentage chance of success the closer you are/more additions you have
 	//after assessing if the arrow flies where it is suppossed to, it checks if the target dodges
-	public boolean accuracyTest(int range, int dodge, int accuracy, int additions){
-		if ((double)range / ((double)accuracy + additions) <= Math.random()){
-			boolean check = ((int)(Math.random()*11) + 1 >= dodge);
-			return check;
-		}
-		return false;
-	}
-	public Bow(int a, int d, Arrow arrow, int givenRange) {
+	public Bow(int a, int d, Quiver givenSet, int givenRange) {
 		/* 
 		 * This "a" parameter used to be "mA"
 		 * ('modified attack' or perhaps 'modified accuracy'?)
@@ -25,35 +18,19 @@ public class Bow extends Weapon {
 		 *  to modify the value of "a", before using it?)
 		 *  -VC
 		 * */
-		super(d,a,arrow.armourPiercing,givenRange);
-		arrows = new Arrow(arrow.armourPiercing, arrow.quiver);
+		super(d, a, givenSet.getAP(), givenRange);
+		/*
+		arrows = new Quiver(arrow.getAP(), arrow.quiver);
+		*/
+		arrows = givenSet;
 		accuracy = a;
 	}
-	//This is the actual attack method
-	//comes from weapon
-	public void attack(Unit attacker, Unit target){
-		arrows.shoot();
-		if(accuracyTest(((Archer)attacker).range, target.dodge, attacker.accuracy, 0)){
-			//This method is a weapon method
-            /* In order to be compatible with the dealDamage() in the Weapon class,
-             * this line had to be adjusted... more parameters needed to be added
-             * */
-            /*
-			dealDamage(target);
-			*/
-			int armourDifference = armourPiercing - target.armour;
-			if(armourDifference > 0) armourDifference = 0;
-			target.dealDamage(
-				((int)(Math.random()*(maxDamage-minDamage)) + minDamage - armourDifference),
-				attacker,
-				attacker.getStrength(),
-				maxDamage,
-				0);
-/*			System.out.println("hit");*/
-		}
-/*		else System.out.println("missed");*/
-		
-			
+
+	public Quiver getQuiver() {
+		return arrows;
+	}
+
+	public String toString() {
+		return (("BOW, "+arrows.getNumAvailable()+"/"+arrows.getMax()+", ACC "+accuracy));
 	}
 }
-

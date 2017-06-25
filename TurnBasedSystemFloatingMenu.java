@@ -318,7 +318,7 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 
 	private void readMap() {
 		try {
-			File randomMap = new File("maps/map" + mapFileChoice + ".map");
+			File randomMap = new File(Logger.map_dir+"map"+mapFileChoice+".map");
 			Scanner reader = new Scanner(randomMap);
 			for (int y = 0; y < tilesY; y ++) {
 				for (int x = 0; x < tilesX; x ++) {
@@ -799,8 +799,8 @@ class TacticalMapWindow extends JPanel implements MouseListener, ActionListener 
 	}
 }
 
-public class TurnBasedSystem extends JFrame {
-	public TurnBasedSystem(ArrayList<Unit> sideA, ArrayList<Unit> sideB) {
+public class TurnBasedSystemFloatingMenu extends JFrame {
+	public TurnBasedSystemFloatingMenu(ArrayList<Unit> sideA, ArrayList<Unit> sideB) {
 		initUI(sideA, sideB);
 	}
 
